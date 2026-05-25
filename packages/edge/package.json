@@ -1,0 +1,9 @@
+{
+  "name": "@heimdall/edge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Jetson edge detection — YOLOv9 + TensorRT + FastAPI",
+  "scripts": {
+    "dev": "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "heimdall",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Edge AI for Situational Awareness in Emergencies — monorepo",
+  "scripts": {
+    "dev:dashboard": "pnpm --filter @heimdall/dashboard dev",
+    "build:dashboard": "pnpm --filter @heimdall/dashboard build",
+    "lint:dashboard": "pnpm --filter @heimdall/dashboard lint",
+    "dev:edge": "pnpm --filter @heimdall/edge dev",
+    "dev:simulator": "pnpm --filter @heimdall/simulator dev"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@heimdall/simulator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telemetry simulator for local development without hardware",
+  "scripts": {
+    "dev": "echo 'Simulator not yet implemented'"
+  }
+}

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import logging
 import math
@@ -265,7 +265,7 @@ def calculate_flame_height_balbi(
     Where:
         I = fireline intensity (kW/m)
         H = heat of combustion (kJ/kg)
-        w = fuel consumed per unit area (kg/mÂ²)
+        w = fuel consumed per unit area (kg/m²)
         R = rate of spread (m/s)
 
     Args:

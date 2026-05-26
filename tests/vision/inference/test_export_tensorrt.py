@@ -1,4 +1,4 @@
-﻿"""Tests for export_tensorrt.py â€” runs without GPU/CUDA."""
+"""Tests for export_tensorrt.py -- runs without GPU/CUDA."""
 
 import inspect
 

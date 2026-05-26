@@ -1,4 +1,4 @@
-﻿"""Tests for infer_jetson.py â€” runnable without Jetson hardware.
+"""Tests for infer_jetson.py -- runnable without Jetson hardware.
 
 All GPU/CUDA-dependent functions are tested for graceful error handling
 and correct function signatures. Graphics functions use synthetic frames.

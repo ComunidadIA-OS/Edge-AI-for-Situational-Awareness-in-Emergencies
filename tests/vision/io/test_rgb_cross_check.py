@@ -1,4 +1,4 @@
-﻿"""Tests for RGB + Thermal cross-check module."""
+"""Tests for RGB + Thermal cross-check module."""
 
 import json
 from pathlib import Path
@@ -155,7 +155,7 @@ class TestCrossCheckDataset:
         fire_label = labels_dir / "flame_fire_00001.txt"
         fire_label.write_text("0 0.50 0.50 0.30 0.30\n0 0.20 0.20 0.10 0.10")
 
-        # Create nofire label (empty â€” should be skipped)
+        # Create nofire label (empty -- should be skipped)
         nofire_label = labels_dir / "flame_nofire_00081.txt"
         nofire_label.write_text("")
 
@@ -167,7 +167,7 @@ class TestCrossCheckDataset:
 
         assert report["total_labels_checked"] == 1
         assert report["total_bboxes_before"] == 2
-        assert report["total_bboxes_after"] == 2  # RGB has fire â†’ both kept
+        assert report["total_bboxes_after"] == 2  # RGB has fire -> both kept
         assert report["rgb_missing"] == 0
         assert Path(prepared, "cross_check_report.json").exists()
 
@@ -182,7 +182,7 @@ class TestCrossCheckDataset:
         rgb_dir = tmp_path / "rgb"
         rgb_dir.mkdir()
 
-        # Only nofire labels â€” should check zero
+        # Only nofire labels -- should check zero
         nofire_label = labels_dir / "flame_nofire_00001.txt"
         nofire_label.write_text("")
 

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
@@ -54,86 +54,79 @@ def generate_situational_awareness(
         SituationalAwareness object with summary, warnings, and actions.
     """
     trend_text = {
-        "growing": "en expansion activa",
-        "stable": "estable, sin cambios significativos",
-        "shrinking": "en disminucion",
-        "extinguishing": "extinguiendose naturalmente",
-    }.get(prediction.trend, "indeterminado")
-
-    intensity_text = {
-        "extreme": "extrema",
-        "high": "alta",
-        "moderate": "moderada",
-        "low": "baja",
-    }
+        "growing": "actively expanding",
+        "stable": "stable, no significant change",
+        "shrinking": "shrinking",
+        "extinguishing": "naturally extinguishing",
+    }.get(prediction.trend, "undetermined")
 
     fwi = prediction.fire_weather_index
     wind_dir = current_weather.wind_direction_deg
     wind_dir_cardinal = _degrees_to_cardinal(wind_dir)
 
     summary = (
-        f"Incendio de {fire_perimeter.area_ha:.1f} ha {trend_text}. "
-        f"Indice meteorologico de fuego: {fwi:.0f}/100. "
-        f"Viento: {current_weather.wind_speed_kmh:.0f} km/h del {wind_dir_cardinal}. "
-        f"Humedad: {current_weather.relative_humidity_pct:.0f}%. "
-        f"Velocidad de propagacion estimada: {prediction.spread_rate_mh:.0f} m/h."
+        f"{fire_perimeter.area_ha:.1f} ha fire {trend_text}. "
+        f"Fire weather index: {fwi:.0f}/100. "
+        f"Wind: {current_weather.wind_speed_kmh:.0f} km/h from {wind_dir_cardinal}. "
+        f"Humidity: {current_weather.relative_humidity_pct:.0f}%. "
+        f"Estimated spread rate: {prediction.spread_rate_mh:.0f} m/h."
     )
 
     fire_behavior = (
-        f"El fuego se propaga hacia el {wind_dir_cardinal} a {prediction.spread_rate_mh:.0f} m/h. "
-        f"Area proyectada en 24h: {prediction.predicted_area_24h_ha:.0f} ha. "
-        f"Confianza del modelo: {prediction.confidence * 100:.0f}%."
+        f"Fire spreading {wind_dir_cardinal} at {prediction.spread_rate_mh:.0f} m/h. "
+        f"Projected area in 24h: {prediction.predicted_area_24h_ha:.0f} ha. "
+        f"Model confidence: {prediction.confidence * 100:.0f}%."
     )
 
     weather_summary = (
-        f"Temperatura: {current_weather.temperature_c:.1f}Â°C. "
-        f"Humedad relativa: {current_weather.relative_humidity_pct:.0f}%. "
-        f"Precipitacion: {current_weather.precipitation_mm:.1f} mm. "
-        f"Rafagas: {current_weather.wind_gusts_kmh:.0f} km/h."
+        f"Temperature: {current_weather.temperature_c:.1f}°C. "
+        f"Relative humidity: {current_weather.relative_humidity_pct:.0f}%. "
+        f"Precipitation: {current_weather.precipitation_mm:.1f} mm. "
+        f"Gusts: {current_weather.wind_gusts_kmh:.0f} km/h."
     )
 
     warnings: list[str] = []
 
     if fwi >= 70:
-        warnings.append("CRITICO: Indice meteorologico de fuego extremo (>70). Condiciones explosivas posibles.")
+        warnings.append("CRITICAL: Extreme fire weather index (>70). Explosive conditions possible.")
     elif fwi >= 50:
-        warnings.append("ALERTA: Indice meteorologico de fuego alto (>50). Alta probabilidad de propagacion rapida.")
+        warnings.append("ALERT: High fire weather index (>50). High probability of rapid spread.")
 
     if current_weather.wind_gusts_kmh > 50:
-        warnings.append(f"VIENTO PELIGROSO: Rafagas de {current_weather.wind_gusts_kmh:.0f} km/h. Comportamiento erratico del fuego posible.")
+        warnings.append(f"DANGEROUS WIND: Gusts of {current_weather.wind_gusts_kmh:.0f} km/h. Erratic fire behavior possible.")
     elif current_weather.wind_speed_kmh > 40:
-        warnings.append(f"VIENTO FUERTE: {current_weather.wind_speed_kmh:.0f} km/h sostenidos. Propagacion acelerada.")
+        warnings.append(f"STRONG WIND: {current_weather.wind_speed_kmh:.0f} km/h sustained. Accelerated spread.")
 
     if current_weather.relative_humidity_pct < 20:
-        warnings.append("HUMEDAD CRITICA: Menos de 20% de humedad relativa. Combustible extremadamente seco.")
+        warnings.append("CRITICAL HUMIDITY: Below 20% relative humidity. Extremely dry fuel.")
 
     if prediction.trend == "growing" and prediction.spread_rate_mh > 100:
-        warnings.append("EXPANSION RAPIDA: El perimetro del incendio crece a mas de 100 m/h. Evacuar zonas en la direccion del viento.")
+        warnings.append("RAPID EXPANSION: Fire perimeter growing faster than 100 m/h. Evacuate areas in wind direction.")
 
     for h in prediction.hourly:
         if h.risk_level == "extreme":
-            warnings.append(f"HORA +{h.hour_offset}: Riesgo extremo. Velocidad de propagacion: {h.spread_rate_mh:.0f} m/h.")
+            warnings.append(f"HOUR +{h.hour_offset}: Extreme risk. Spread rate: {h.spread_rate_mh:.0f} m/h.")
 
     actions: list[str] = []
 
     if prediction.trend == "growing":
-        actions.append(f"DESPLEGAR recursos en el flanco {_opposite_cardinal(wind_dir_cardinal)} para contener el avance.")
-        actions.append("ESTABLECER linea de control a favor del viento a al menos 500m del perimetro actual.")
+        actions.append(f"DEPLOY resources on the {_opposite_cardinal(wind_dir_cardinal)} flank to contain the advance.")
+        actions.append("ESTABLISH control line downwind at least 500 m from the current perimeter.")
     elif prediction.trend == "shrinking":
-        actions.append("REFORZAR linea de contencion actual. El fuego esta cediendo.")
-        actions.append("PREPARAR equipos para liquidacion de puntos calientes.")
+        actions.append("REINFORCE current containment line. Fire is retreating.")
+        actions.append("PREPARE crews for hotspot mop-up operations.")
     elif prediction.trend == "stable":
-        actions.append("MANTENER posicion defensiva. Monitorear cambios de viento.")
-        actions.append("PREPARAR plan de evacuacion preventiva en radio de 2 km.")
+        actions.append("MAINTAIN defensive position. Monitor wind shifts.")
+        actions.append("PREPARE preventive evacuation plan within 2 km radius.")
     elif prediction.trend == "extinguishing":
-        actions.append("INICIAR fase de liquidacion. El fuego se extingue naturalmente.")
-        actions.append("PATRULLAR perimetro para detectar reigniciones.")
+        actions.append("INITIATE mop-up phase. Fire is extinguishing naturally.")
+        actions.append("PATROL perimeter to detect rekindles.")
 
     if current_weather.relative_humidity_pct < 25:
-        actions.append("HUMEDECER combustible alrededor del perimetro para reducir riesgo de saltos.")
+        actions.append("WET DOWN fuel around the perimeter to reduce spotting risk.")
 
     if current_weather.wind_gusts_kmh > 40:
-        actions.append("RETIRAR personal de zonas de proyeccion de pavesas. Riesgo de focos secundarios.")
+        actions.append("WITHDRAW personnel from ember projection zones. Risk of secondary ignitions.")
 
     infra = infrastructure or []
 

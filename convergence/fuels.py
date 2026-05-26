@@ -48,7 +48,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     1: FuelModel(
         fuel_type_id=1,
         name="Short Grass",
-        description="Pastizales bajos (<30 cm). Propagacion rapida con viento. Comun en praderas y sabanas.",
+        description="Short grass (<30 cm). Rapid spread with wind. Common in prairies and savannas.",
         rhod=512.0,
         rhol=512.0,
         sd=11500.0,
@@ -60,7 +60,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     2: FuelModel(
         fuel_type_id=2,
         name="Timber Grass",
-        description="Pastizal bajo dosel arboreo abierto. Menor velocidad de viento efectiva por proteccion del dosel.",
+        description="Grass under open tree canopy. Reduced effective wind speed due to canopy sheltering.",
         rhod=512.0,
         rhol=512.0,
         sd=9800.0,
@@ -72,7 +72,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     3: FuelModel(
         fuel_type_id=3,
         name="Tall Grass",
-        description="Pastizales altos (75-100 cm). Carga de combustible elevada, propagacion muy rapida con viento fuerte.",
+        description="Tall grass (75-100 cm). High fuel load, very rapid spread in strong wind.",
         rhod=512.0,
         rhol=512.0,
         sd=4900.0,
@@ -84,7 +84,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     4: FuelModel(
         fuel_type_id=4,
         name="Chaparral",
-        description="Matorral denso mediterraneo (>2 m). Alta carga de combustible vivo y muerto. Comportamiento extremo con viento.",
+        description="Dense Mediterranean shrubland (>2 m). High live and dead fuel load. Extreme behavior in wind.",
         rhod=512.0,
         rhol=512.0,
         sd=6600.0,
@@ -96,7 +96,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     5: FuelModel(
         fuel_type_id=5,
         name="Brush",
-        description="Arbustos bajos (<1 m). Carga ligera de combustible. Propagacion moderada.",
+        description="Low shrubs (<1 m). Light fuel load. Moderate rate of spread.",
         rhod=512.0,
         rhol=512.0,
         sd=5600.0,
@@ -108,7 +108,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     6: FuelModel(
         fuel_type_id=6,
         name="Dormant Brush",
-        description="Arbustivo latente o hardwood slash. Combustible muerto predominante. Alta inflamabilidad en sequia.",
+        description="Dormant brush or hardwood slash. Predominantly dead fuel. High flammability in drought.",
         rhod=512.0,
         rhol=512.0,
         sd=5600.0,
@@ -120,7 +120,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     7: FuelModel(
         fuel_type_id=7,
         name="Southern Rough",
-        description="Sotobosque del sudeste de EE.UU. Hojarasca de pino con arbustos bajos. Alta relacion superficie/volumen.",
+        description="Southeastern US understory. Pine litter with low shrubs. High surface-area-to-volume ratio.",
         rhod=512.0,
         rhol=512.0,
         sd=5800.0,
@@ -132,7 +132,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     8: FuelModel(
         fuel_type_id=8,
         name="Closed Timber Litter",
-        description="Hojarasca compacta bajo dosel cerrado. Baja propagacion salvo con vientos fuertes o sequia extrema.",
+        description="Compact litter under closed canopy. Slow spread except under strong wind or extreme drought.",
         rhod=512.0,
         rhol=512.0,
         sd=5900.0,
@@ -144,7 +144,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     9: FuelModel(
         fuel_type_id=9,
         name="Hardwood Litter",
-        description="Hojarasca de frondosas caducifolias. Compactacion alta, baja inflamabilidad excepto en otoño seco.",
+        description="Deciduous hardwood litter. High compaction, low flammability except in dry autumn.",
         rhod=512.0,
         rhol=512.0,
         sd=6600.0,
@@ -156,7 +156,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     10: FuelModel(
         fuel_type_id=10,
         name="Timber Litter & Understory",
-        description="Hojarasca de coniferas con sotobosque. Carga media de combustible. Comun en bosques de pino ponderosa.",
+        description="Conifer litter with understory. Medium fuel load. Common in ponderosa pine forests.",
         rhod=512.0,
         rhol=512.0,
         sd=5900.0,
@@ -168,7 +168,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     11: FuelModel(
         fuel_type_id=11,
         name="Light Slash",
-        description="Restos ligeros de tala (<7.5 cm diametro). Alta relacion superficie/volumen. Secado rapido.",
+        description="Light logging slash (<7.5 cm diameter). High surface-area-to-volume ratio. Rapid drying.",
         rhod=512.0,
         rhol=512.0,
         sd=4900.0,
@@ -180,7 +180,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     12: FuelModel(
         fuel_type_id=12,
         name="Medium Slash",
-        description="Restos medios de tala (7.5-20 cm). Carga sustancial. Propagacion moderada con mayor duracion.",
+        description="Medium logging slash (7.5-20 cm). Substantial load. Moderate spread with longer burn duration.",
         rhod=512.0,
         rhol=512.0,
         sd=4900.0,
@@ -192,7 +192,7 @@ FUEL_MODELS: dict[int, FuelModel] = {
     13: FuelModel(
         fuel_type_id=13,
         name="Heavy Slash",
-        description="Restos pesados de tala (>20 cm). Carga muy alta. Propagacion lenta pero extrema intensidad y duracion.",
+        description="Heavy logging slash (>20 cm). Very high load. Slow spread but extreme intensity and duration.",
         rhod=512.0,
         rhol=512.0,
         sd=4900.0,

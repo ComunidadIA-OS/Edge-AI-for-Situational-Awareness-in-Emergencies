@@ -1,13 +1,13 @@
-﻿"""RGB + Thermal cross-check: validates auto-labeled thermal bboxes against paired RGB.
+"""RGB + Thermal cross-check: validates auto-labeled thermal bboxes against paired RGB.
 
-For each thermal-labeled bbox, FIRST checks the TIFF temperature â€” if max > 200Â°C it's
+For each thermal-labeled bbox, FIRST checks the TIFF temperature -- if max > 200°C it's
 definitively fire (thermal sees through smoke) and the bbox is kept regardless of RGB.
-Only if temperature is borderline (< 200Â°C) does it check RGB for fire-colored pixels.
+Only if temperature is borderline (< 200°C) does it check RGB for fire-colored pixels.
 
 This prevents false negatives from smoke-obscured fires where RGB shows gray smoke
-but LWIR thermal clearly shows > 200Â°C fire.
+but LWIR thermal clearly shows > 200°C fire.
 
-Uses low thresholds by design â€” the RGB check is a SAFETY FILTER that only removes
+Uses low thresholds by design -- the RGB check is a SAFETY FILTER that only removes
 clear false positives (hot rocks, warm bare ground). It does NOT require perfect
 RGB fire visibility.
 """
@@ -24,7 +24,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # Fire color ranges in HSV (OpenCV: H[0-179], S[0-255], V[0-255])
-# Red, orange, yellow â€” conservative to avoid rejecting real fire
+# Red, orange, yellow -- conservative to avoid rejecting real fire
 _FIRE_HSV_RANGES: list[tuple[tuple[int, int], tuple[int, int], tuple[int, int]]] = [
     # Red (low hue, includes wrap-around)
     ((0, 12), (50, 255), (50, 255)),
@@ -38,7 +38,7 @@ _FIRE_HSV_RANGES: list[tuple[tuple[int, int], tuple[int, int], tuple[int, int]]]
 
 DEFAULT_MIN_FIRE_RATIO = 0.03
 DEFAULT_MIN_CROP_AREA = 25
-TIFF_TEMP_BYPASS = 200.0  # Â°C â€” if max TIFF temp > this, keep bbox regardless of RGB
+TIFF_TEMP_BYPASS = 200.0  # °C -- if max TIFF temp > this, keep bbox regardless of RGB
 
 
 def fire_hsv_ratio(rgb_crop: np.ndarray) -> float:
@@ -48,7 +48,7 @@ def fire_hsv_ratio(rgb_crop: np.ndarray) -> float:
         rgb_crop: BGR image crop (uint8, (H, W, 3))
 
     Returns:
-        Float in [0.0, 1.0] â€” fraction of pixels matching fire HSV ranges.
+        Float in [0.0, 1.0] -- fraction of pixels matching fire HSV ranges.
     """
     if rgb_crop.size == 0:
         return 0.0
@@ -102,8 +102,8 @@ def cross_check_label(
 ) -> tuple[str, dict]:
     """Cross-check a YOLO label file against paired RGB + TIFF temperature.
 
-    For each bbox, FIRST checks the TIFF max temperature â€” if > tiff_temp_bypass
-    (200Â°C), the bbox is kept regardless of RGB (thermal sees through smoke).
+    For each bbox, FIRST checks the TIFF max temperature -- if > tiff_temp_bypass
+    (200°C), the bbox is kept regardless of RGB (thermal sees through smoke).
     Otherwise, crops the RGB region and checks for fire-colored pixels.
 
     Args:
@@ -114,7 +114,7 @@ def cross_check_label(
         min_fire_ratio: Minimum fraction of fire-colored pixels to keep bbox
         min_crop_area: Minimum crop area in pixels (skip crops smaller than this)
         tiff_path: Path to the original Celsius TIFF (for temperature bypass)
-        tiff_temp_bypass: Â°C threshold â€” if max TIFF temp > this, auto-keep bbox
+        tiff_temp_bypass: °C threshold -- if max TIFF temp > this, auto-keep bbox
 
     Returns:
         (filtered_yolo_string, stats_dict) where stats_dict has:
@@ -158,7 +158,7 @@ def cross_check_label(
         bw = float(w_str)
         bh = float(h_str)
 
-        # Convert normalized â†’ pixel coordinates
+        # Convert normalized -> pixel coordinates
         px = int((xc - bw / 2) * img_w)
         py = int((yc - bh / 2) * img_h)
         pw = int(bw * img_w)
@@ -183,7 +183,7 @@ def cross_check_label(
             kept += 1
             continue
 
-        # â”€â”€ Temperature bypass: if TIFF max temp > 200Â°C, keep regardless of RGB â”€â”€
+        # -- Temperature bypass: if TIFF max temp > 200°C, keep regardless of RGB --
         max_temp = _tiff_max_temp_in_bbox(tiff_path, x1, y1, x2, y2)
         if max_temp > tiff_temp_bypass:
             kept_lines.append(line)
@@ -238,7 +238,7 @@ def cross_check_dataset(
     """Cross-check all auto-labeled images in a prepared dataset against paired RGB + TIFF.
 
     Walks labels/all/, finds paired RGB and TIFF for FLAME fire images.
-    Uses temperature bypass: if TIFF max temp > 200Â°C, keeps bbox regardless of RGB.
+    Uses temperature bypass: if TIFF max temp > 200°C, keeps bbox regardless of RGB.
     No-fire images are left unchanged (they have empty labels).
 
     Args:
@@ -248,7 +248,7 @@ def cross_check_dataset(
         img_w: Image width for YOLO coordinate denormalization
         img_h: Image height for YOLO coordinate denormalization
         min_fire_ratio: Minimum fire-colored pixel ratio to keep bbox
-        tiff_temp_bypass: Â°C threshold â€” if max TIFF temp > this, auto-keep bbox
+        tiff_temp_bypass: °C threshold -- if max TIFF temp > this, auto-keep bbox
 
     Returns:
         Report dict with keys:
@@ -269,7 +269,7 @@ def cross_check_dataset(
     label_files = sorted(labels_dir.glob("*.txt"))
     logger.info("Cross-checking %d label files against RGB at %s", len(label_files), rgb_dir)
     if tiff_dir:
-        logger.info("Temperature bypass enabled: TIFF dir %s, threshold %.0fÂ°C",
+        logger.info("Temperature bypass enabled: TIFF dir %s, threshold %.0f°C",
                      tiff_dir, tiff_temp_bypass)
 
     # Backup original labels
@@ -301,7 +301,7 @@ def cross_check_dataset(
 
         total_checked += 1
 
-        # Extract original stem: "flame_fire_00001" â†’ "00001"
+        # Extract original stem: "flame_fire_00001" -> "00001"
         parts = name.split("_")
         stem = parts[-1]
 

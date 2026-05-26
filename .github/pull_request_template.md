@@ -1,27 +1,27 @@
 ---
 name: Pull Request
-about: Envía un pull request
+about: Submit a pull request
 title: ""
 labels: ""
 assignees: ""
 ---
 
-## Descripción
+## Description
 
-<!-- Describe los cambios que introduces -->
+<!-- Describe the changes you are introducing -->
 
-## Tipo de cambio
+## Type of change
 
 - [ ] Bug fix
-- [ ] Nueva feature
+- [ ] New feature
 - [ ] Breaking change
-- [ ] Documentación
+- [ ] Documentation
 - [ ] Refactor
 
 ## Checklist
 
-- [ ] He ejecutado `pnpm exec tsc --noEmit` sin errores
-- [ ] He ejecutado `pnpm build` exitosamente
-- [ ] He añadido tests que prueban mis cambios
-- [ ] Los tests nuevos y existentes pasan
-- [ ] Mi código sigue las convenciones del proyecto (sin `any`, sin comentarios obvios)
+- [ ] I have run `pnpm exec tsc --noEmit` with no errors
+- [ ] I have run `pnpm build` successfully
+- [ ] I have added tests covering my changes
+- [ ] New and existing tests pass
+- [ ] My code follows the project conventions (no `any`, no obvious comments)

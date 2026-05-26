@@ -1,18 +1,63 @@
 {
-  "name": "heimdall",
+  "name": "@heimdall/ground-control",
   "version": "0.1.0",
   "private": true,
-  "description": "Edge AI for Situational Awareness in Emergencies — monorepo",
+  "description": "Heimdall Ground Control — situational-awareness dashboard. Pure consumer of the MeteoReport contract.",
   "scripts": {
-    "dev:dashboard": "pnpm --filter @heimdall/dashboard dev",
-    "build:dashboard": "pnpm --filter @heimdall/dashboard build",
-    "lint:dashboard": "pnpm --filter @heimdall/dashboard lint",
-    "dev:edge": "pnpm --filter @heimdall/edge dev",
-    "dev:simulator": "pnpm --filter @heimdall/simulator dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
-  "engines": {
-    "node": ">=18",
-    "pnpm": ">=9"
+  "dependencies": {
+    "@deck.gl/core": "^9.3.2",
+    "@deck.gl/layers": "^9.3.2",
+    "@deck.gl/mapbox": "^9.3.2",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@tanstack/react-query": "^5.100.11",
+    "deck.gl": "^9.3.2",
+    "ky": "^2.0.2",
+    "lucide-react": "^1.16.0",
+    "maplibre-gl": "^5.24.0",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
   },
-  "packageManager": "pnpm@9.15.4"
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "jsdom": "^29.1.1",
+    "msw": "^2.14.6",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.7"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msw",
+      "sharp",
+      "unrs-resolver"
+    ],
+    "ignoredBuiltDependencies": [
+      "@vaadin/vaadin-usage-statistics"
+    ]
+  }
 }

@@ -1,19 +1,19 @@
 ---
 name: Feature Request
-about: Sugiere una idea para este proyecto
+about: Suggest an idea for this project
 title: "[FEAT] "
 labels: enhancement
 assignees: ""
 ---
 
-**¿Tu feature request está relacionada con un problema?**
-Descripción clara del problema. Ej: "Siempre me frustra cuando [...]"
+**Is your feature request related to a problem?**
+A clear description of the problem. E.g. "I'm always frustrated when [...]"
 
-**Describe la solución que te gustaría**
-Descripción concisa de lo que quieres que ocurra.
+**Describe the solution you'd like**
+A concise description of what you want to happen.
 
-**Describe alternativas que has considerado**
-Descripción de soluciones alternativas o workarounds.
+**Describe alternatives you've considered**
+A description of alternative solutions or workarounds.
 
-**Contexto adicional**
-Cualquier otro contexto o screenshots sobre la feature request.
+**Additional context**
+Any other context or screenshots about the feature request.

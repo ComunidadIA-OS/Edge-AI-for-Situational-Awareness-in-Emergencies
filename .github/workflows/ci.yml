@@ -2,48 +2,49 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [v0.1-GroundControl]
   pull_request:
-    branches: [main]
+    branches: [v0.1-GroundControl]
 
 jobs:
-  dashboard:
+  ground-control:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: packages/dashboard
+        working-directory: ground-control
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: ground-control/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm exec tsc --noEmit
 
+      - run: pnpm test
+
       - run: pnpm build
 
-  edge:
+  docker:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/edge
-
+    needs: ground-control
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
         with:
-          python-version: "3.11"
-
-      - run: pip install -r requirements.txt
-
-      - run: ruff check .
+          context: ./ground-control
+          push: false
+          tags: heimdall-ground-control:ci

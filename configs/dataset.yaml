@@ -1,0 +1,59 @@
+# XHeimdall Dataset Preparation Config
+# Feeds into src.prepare_data.process_dataset()
+
+output_dir: "../../data/prepared"
+debug_enabled: true
+debug_every_n: 50
+
+sources:
+  - name: "FLAME_Fire"
+    type: "flame"
+    fire_dir: "../../datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/Fire/Thermal/Celsius TIFF/"
+    nofire_dir: "../../datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/No Fire/Thermal/Celsius TIFF/"
+    fire_jpg_dir: "../../datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/Fire/Thermal/Raw JPG/"
+    nofire_jpg_dir: "../../datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/No Fire/Thermal/Raw JPG/"
+    auto_label_config:
+      absolute_threshold: 150.0
+      gradient_threshold: 40.0
+      min_area: 50
+      max_aspect_ratio: 8.0
+      dbscan_eps: 30
+      dbscan_min_samples: 5
+      max_bbox_ratio: 0.4
+      kmeans_subdivide_threshold: 500
+      min_fill_ratio: 0.15
+      class_id: 0
+
+  - name: "Hanna_Hammock_plot1"
+    type: "hanna"
+    thermal_dir: "../../datasets/NADIRPlots/Hanna Hammock/plot 1/duringburn/geo_thermal_tiff_celsius/"
+    jpg_dir: "../../datasets/NADIRPlots/Hanna Hammock/plot 1/duringburn/raw_thermal_jpg/"
+    stem_suffix_strip: "_ref_geo"
+    auto_label_config:
+      absolute_threshold: 80.0
+      gradient_threshold: 50.0
+      min_area: 100
+      max_aspect_ratio: 8.0
+      dbscan_eps: 30
+      dbscan_min_samples: 5
+      max_bbox_ratio: 0.5
+      kmeans_subdivide_threshold: 600
+      min_fill_ratio: 0.20
+      class_id: 0
+
+  - name: "Hanna_Hammock_plot2"
+    type: "hanna"
+    thermal_dir: "../../datasets/NADIRPlots/Hanna Hammock/plot 2/duringburn/geo_thermal_tiff_celsius/"
+    jpg_dir: "../../datasets/NADIRPlots/Hanna Hammock/plot 2/duringburn/raw_thermal_jpg/"
+    stem_suffix_strip: "_ref_geo"
+    auto_label_config:
+      absolute_threshold: 80.0
+      gradient_threshold: 50.0
+      min_area: 100
+      max_aspect_ratio: 8.0
+      dbscan_eps: 30
+      dbscan_min_samples: 5
+      max_bbox_ratio: 0.5
+      kmeans_subdivide_threshold: 600
+      min_fill_ratio: 0.20
+      class_id: 0

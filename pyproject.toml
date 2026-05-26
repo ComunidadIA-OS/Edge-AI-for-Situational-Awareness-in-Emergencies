@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xheimdall-edge"
+version = "0.1.0"
+description = "XHeimdall edge — thermal fire detection (vision) + fire propagation forecasting (convergence)"
+requires-python = ">=3.10"
+authors = [{ name = "XHeimdall" }]
+
+dependencies = [
+  "numpy>=1.24.0,<2.0",
+  "tifffile>=2024.1.0",
+  "imagecodecs>=2024.1.0",
+  "Pillow>=10.0.0",
+  "pyyaml>=6.0",
+  "opencv-python>=4.8.0",
+  "scipy>=1.10.0",
+  "scikit-image>=0.21.0",
+  "scikit-learn>=1.3.0",
+  "ultralytics>=8.2.0",
+  "torch>=2.0.0",
+  "torchvision>=0.15.0",
+  "onnx>=1.15.0",
+  "boto3>=1.28.0",
+  "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+# Thermal IR decoding — Linux/Jetson only; skip on Windows dev
+thermal = ["pyflir>=0.3.0"]
+# Jetson inference runtime
+jetson = ["onnxruntime-gpu>=1.16.0"]
+# SageMaker training submission — heavy deps, only needed to launch jobs
+sagemaker = ["sagemaker>=2.190.0", "wandb>=0.16.0"]
+# Convergence API server (FastAPI + uvicorn)
+api = ["fastapi>=0.110.0", "uvicorn[standard]>=0.27.0", "pydantic>=2.5.0"]
+dev = ["pytest>=7.4.0", "pytest-cov>=4.1.0", "httpx>=0.27.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vision*", "convergence*"]
+exclude = ["tests*", "sdd*", "scripts*", "configs*", "docker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]

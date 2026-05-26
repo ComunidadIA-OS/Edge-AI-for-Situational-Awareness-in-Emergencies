@@ -1,0 +1,37 @@
+model:
+  name: "yolo26m.pt"
+  imgsz: 1280
+  epochs: 200
+  batch: 8
+  patience: 30
+  device: "0"
+  save_period: 10
+  pretrained: true
+  optimizer: "SGD"
+  momentum: 0.937
+  weight_decay: 0.0005
+  box: 10.0
+  cls: 0.5
+  dfl: 3.0
+
+augmentation:
+  hsv_h: 0.0
+  hsv_s: 0.0
+  hsv_v: 0.3
+  fliplr: 0.5
+  mosaic: 1.0
+  scale: 0.5
+  erasing: 0.1
+
+sagemaker:
+  instance_type: "ml.g5.xlarge"
+  use_spot: false
+  max_wait: 36000
+  max_run: 28800
+  volume_size: 100
+
+dataset:
+  nc: 1
+  names:
+    0: "fire"
+  split_ratios: [0.7, 0.15, 0.15]

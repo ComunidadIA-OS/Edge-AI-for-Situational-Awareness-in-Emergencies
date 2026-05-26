@@ -1,0 +1,51 @@
+# XHeimdall Convergence API — Jetson AGX target
+#
+# Slim runtime image for the convergence (meteo + propagation) FastAPI server.
+# Inference (YOLO + TensorRT) runs in a separate process / container; this image
+# only carries what the API needs: Python deps + the convergence package.
+#
+# Build (from packages/edge/):
+#   docker build -f docker/Dockerfile.jetson -t xheimdall-convergence:jetson .
+#
+# Run:
+#   docker run --rm -p 8000:8000 --env-file docker/.env xheimdall-convergence:jetson
+
+FROM python:3.11-slim-bookworm
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install only the runtime deps the API actually needs. We skip the heavy ML
+# stack (torch, ultralytics, opencv) since inference is owned by a separate
+# container. This keeps the image small and avoids CUDA mismatches on Jetson.
+RUN pip install --no-cache-dir \
+    "fastapi>=0.110" \
+    "uvicorn[standard]>=0.27" \
+    "pydantic>=2.5" \
+    "numpy>=1.24,<2.0" \
+    "scipy>=1.10" \
+    "pyyaml>=6.0"
+
+# Copy only what the API imports.
+COPY convergence/ /app/convergence/
+
+ENV HOST=0.0.0.0 \
+    PORT=8000 \
+    LOG_LEVEL=info \
+    PYTHONPATH=/app
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -fsS http://localhost:${PORT}/health || exit 1
+
+CMD ["sh", "-c", "uvicorn convergence.api:app --host ${HOST} --port ${PORT} --log-level ${LOG_LEVEL}"]

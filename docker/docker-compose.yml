@@ -1,0 +1,35 @@
+# XHeimdall edge — Convergence API
+#
+# Usage (from packages/edge/):
+#   cp docker/.env.example docker/.env
+#   docker compose -f docker/docker-compose.yml --env-file docker/.env up --build
+#
+# Stop:
+#   docker compose -f docker/docker-compose.yml down
+
+services:
+  convergence-api:
+    image: xheimdall-convergence:jetson
+    container_name: xheimdall-convergence-api
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.jetson
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8000"
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

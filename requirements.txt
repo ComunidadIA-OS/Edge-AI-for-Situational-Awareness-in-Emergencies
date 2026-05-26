@@ -1,6 +1,0 @@
-# Dependencies are declared in pyproject.toml.
-# Install in editable mode (from packages/edge/):
-#     pip install -e .
-#     pip install -e ".[dev]"           # add test deps
-#     pip install -e ".[thermal,jetson]" # Jetson inference target
-#     pip install -e ".[sagemaker]"     # to submit training jobs

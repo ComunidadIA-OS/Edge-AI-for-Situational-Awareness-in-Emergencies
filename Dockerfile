@@ -14,7 +14,10 @@
 # ----- Stage 1: dependencies --------------------------------------------------
 FROM node:20-alpine AS deps
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# corepack picks the exact pnpm version pinned in package.json ("packageManager"),
+# so the build is reproducible. Do NOT use `pnpm@latest` here — it is
+# non-deterministic and a frequent "works on my machine, fails in CI" trap.
+RUN corepack enable
 
 # Copy only the files needed to resolve the dependency graph so this layer
 # stays cached across source-only changes.
@@ -26,7 +29,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 # ----- Stage 2: builder -------------------------------------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

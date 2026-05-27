@@ -142,7 +142,7 @@ If the Jetson team changes the contract, those two files are the only places thi
 
 ## 7. Quick start — one command, zero friction
 
-You only need **Docker Desktop**. No Node, no pnpm, no toolchain on the host.
+You only need **Docker Desktop** (installed **and running** — wait for "Engine running"). No Node, no pnpm, no toolchain on the host.
 
 ```bash
 docker compose up --build
@@ -151,7 +151,9 @@ docker compose up --build
 
 First build is ~2–4 min; subsequent runs start in seconds. The dashboard is **agnostic to the data source** — point it at any service that emits a valid `MeteoReport v1` on `GET /latest`.
 
-If you want to hack on the source instead of just running it, see [**HowRun.md**](./HowRun.md) for the local-dev (Node + pnpm) path.
+> **The container is a production build, so it ships no built-in demo data.** If the dashboard stays empty after you connect, that's expected — it needs a real `GET /latest` endpoint. To explore it with realistic *synthetic* data instead, run the dev path (`pnpm dev`), which auto-mocks the endpoint.
+
+Hit a snag (daemon not running, build fails, blank screen)? See the [**Troubleshooting**](./HowRun.md#troubleshooting) section in `HowRun.md` — it lists each error's symptom, cause and fix. If you want to hack on the source, the same file has the local-dev (Node + pnpm) path.
 
 ---
 

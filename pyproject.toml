@@ -44,7 +44,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["vision*", "convergence*"]
+include = ["vision*", "convergence*", "edge*"]
 exclude = ["tests*", "scripts*", "configs*", "docker*"]
 
 [tool.pytest.ini_options]

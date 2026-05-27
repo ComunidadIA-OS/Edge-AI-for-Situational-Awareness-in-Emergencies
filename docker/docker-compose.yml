@@ -1,13 +1,17 @@
-# XHeimdall edge — Convergence API
+# XHeimdall edge — full stack (convergence API + vision inference)
 #
-# Usage (from packages/edge/):
-#   cp docker/.env.example docker/.env
+# Quick start (from project root):
+#   cp docker/.env.example docker/.env   # adjust if needed
 #   docker compose -f docker/docker-compose.yml --env-file docker/.env up --build
 #
-# Stop:
-#   docker compose -f docker/docker-compose.yml down
+# The convergence-api container handles weather + fire physics (FastAPI :8000).
+# The vision-inference container runs TensorRT inference on the thermal camera
+# and pipes detections into the API; the edge supervisor manages camera checks,
+# API health monitoring, and audible alerts via the GPIO buzzer.
 
 services:
+
+  # ─── Convergence API ────────────────────────────────────────────────────────
   convergence-api:
     image: xheimdall-convergence:jetson
     container_name: xheimdall-convergence-api
@@ -33,3 +37,45 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - heimdall
+
+  # ─── Vision Inference ───────────────────────────────────────────────────────
+  vision-inference:
+    image: xheimdall-vision:jetson
+    container_name: xheimdall-vision-inference
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.vision
+    restart: unless-stopped
+    # Requires NVIDIA container runtime: sudo apt install nvidia-container-toolkit
+    runtime: nvidia
+    # privileged grants access to /dev/video* and /dev/gpiochip* for buzzer
+    privileged: true
+    depends_on:
+      convergence-api:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CONVERGENCE_API_URL: "http://convergence-api:8000"
+      PYTHONPATH: "/app"
+    volumes:
+      # Read-write so the entrypoint can write best.engine after the first
+      # TensorRT export. Pre-place best.pt here to skip the GitHub download.
+      - ../models:/models
+    devices:
+      - "${CAMERA_DEVICE:-/dev/video0}:${CAMERA_DEVICE:-/dev/video0}"
+      # Uncomment to expose GPIO chip for buzzer (requires removing privileged: true):
+      # - /dev/gpiochip0:/dev/gpiochip0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - heimdall
+
+networks:
+  heimdall:
+    driver: bridge

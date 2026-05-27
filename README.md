@@ -132,47 +132,91 @@ Interactive schema docs: `http://localhost:8000/docs` (Swagger UI, live on the J
 
 ---
 
+## Model: Heimdall TensorRT FP16
+
+YOLOv26m fine-tuned on AWS SageMaker (`xheimdall-yolo26m-20260525-101951`) for single-class
+thermal fire detection, exported to TensorRT FP16 for NVIDIA Jetson.
+
+| Metric (200 epochs, val split) | Value |
+|---|---|
+| mAP@0.5 | 0.463 |
+| mAP@0.5:0.95 | 0.246 |
+| Precision | 0.493 |
+| Recall | 0.456 |
+
+Training: `ml.g5.xlarge` (A10G 24 GB) · 200 epochs · 2 h 45 min · **3 064 thermal frames**.  
+See [models/MODEL_CARD.md](models/MODEL_CARD.md) for full details, data sources, limitations and
+our recommendation regarding broader-dataset re-training before operational deployment.
+
+Download weights: `python scripts/fetch_model.py` (~44 MB).
+
+---
+
 ## Quick Start
 
-Full instructions — image contents, env vars, `podman`/`docker` commands, healthcheck — are in **[howRun.md](./howRun.md)**.
+> Hardware: NVIDIA Jetson AGX Orin (JetPack 6.x).  
+> Software prerequisites: `docker` + `nvidia-container-toolkit` (already
+> installed on stock JetPack images).  
+> Optional: thermal camera at `/dev/video0` and active buzzer wired to GPIO pin 7.
 
-```powershell
-# 1. Configure environment
-copy docker\.env.example docker\.env
+```bash
+# 1. Clone and configure
+git clone https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies
+cd Edge-AI-for-Situational-Awareness-in-Emergencies
+cp docker/.env.example docker/.env   # adjust DRONE_LAT/LON, CAMERA_DEVICE if needed
 
-# 2. Start the convergence API
-podman compose -f docker/docker-compose.yml --env-file docker/.env up --build
-
-# 3. Verify
-curl http://localhost:8000/health
+# 2. Launch the full stack
+docker compose -f docker/docker-compose.yml --env-file docker/.env up --build
 ```
+
+That's everything. On first launch, `vision-inference` will:
+
+1. Download `best.pt` (~44 MB) from the GitHub release (or use any `models/best.pt` you've pre-placed).
+2. Export it to `models/best.engine` (TensorRT FP16) — a one-time step that takes 1–3 min on AGX Orin.
+3. Run pre-flight checks (camera + engine + audio backend) — beeps on failure.
+4. Start the supervisor → live YOLO inference → POST detections to `convergence-api` → expose `MeteoReport` on `GET /latest`.
+
+Ground control points to `http://<jetson-ip>:8000/latest`.
+
+Verify the stack:
+
+```bash
+bash scripts/verify_stack.sh
+```
+
+Full environment variables and deployment notes: **[howRun.md](./howRun.md)**.
+
+### Audible alert codes
+
+The vision-inference container emits buzzer beeps when a critical error is detected.
+The operator does **not** need a screen to diagnose the issue.
+
+| Beeps | Meaning | Action |
+|---|---|---|
+| 1 | No camera connected at `/dev/video*` | Connect thermal camera, restart |
+| 2 | Convergence API not responding | Check `convergence-api` container, network |
+| 3 | TensorRT engine file missing | Run `fetch_model.py` + `export_tensorrt.py` |
+| 4 | Unclassified fatal error | Connect a screen, check container logs |
 
 ---
 
 ## Model Weights
 
-The trained `best.pt` is stored in S3 — not in this repo (weights are ~85 MB and version-controlled separately):
+Weights are distributed as a GitHub Release asset (not committed to git).
 
-```powershell
-aws s3 cp s3://xheimdall-models/training/xheimdall-yolo26m-20260525-101951/output/model.tar.gz .
-tar xzf model.tar.gz
-```
+```bash
+# Download best.pt (~44 MB)
+python scripts/fetch_model.py
 
-Export to TensorRT FP16 for Jetson:
+# Export to TensorRT FP16 on Jetson (requires CUDA + TensorRT)
+python -m vision.inference.export_tensorrt --model models/best.pt --fp16 --output models/best.engine
 
-```powershell
-python scripts/export_tensorrt.py best.pt --fp16
-# produces best.engine
-```
-
-Run live inference:
-
-```powershell
+# Or run directly with PyTorch weights (slower, no TensorRT)
 python -m vision.inference.infer_jetson \
-  --engine best.engine \
+  --engine models/best.pt \
   --source /dev/video0 \
   --api-url http://localhost:8000 \
-  --drone-lat 41.6488 --drone-lon -0.8891 \
+  --drone-lat 41.6837 --drone-lon -0.8881 \
   --drone-alt 120 --drone-heading 250
 ```
 
@@ -182,7 +226,7 @@ python -m vision.inference.infer_jetson \
 
 If the camera or TensorRT is unavailable at demo time, replay pre-recorded detections against the live API:
 
-```powershell
+```bash
 python scripts/replay_detections.py \
   --file tests/data/demo_replay.jsonl \
   --api-url http://localhost:8000 \

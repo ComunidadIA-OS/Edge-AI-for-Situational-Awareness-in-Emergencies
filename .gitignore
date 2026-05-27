@@ -72,3 +72,19 @@ htmlcov/
 # Docker artifacts (except Dockerfiles)
 *.tar
 *.tar.gz
+
+# Test videos and capture outputs (too large for git; not used at runtime)
+*.mp4
+*.MP4
+*.mov
+*.MOV
+models/#*
+output.mp4
+
+# SageMaker training output (raw artefacts live in S3, not in git)
+models/xheimdall-yolo26m-*/
+models/xheimdall-yolo26m-*.tar.gz
+
+# Local planning / assistant artefacts
+.claude/
+plans/

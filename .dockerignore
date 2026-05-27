@@ -1,0 +1,46 @@
+# Heavy or sensitive content that the containers do not need at build time.
+# Keep this file in sync with what docker/Dockerfile.* actually COPY.
+
+# Python caches & venv
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# Models — fetched at runtime by entrypoint-vision.sh (see docker/.env)
+models/*.pt
+models/*.engine
+models/*.onnx
+models/*.tar.gz
+models/xheimdall-yolo26m-20260525-101951/
+models/*.MP4
+models/*.mov
+models/*.mp4
+
+# Sample / training assets
+configs/
+tests/
+docs/
+sdd/
+*.md
+LICENSE
+output.mp4
+
+# IDE / VCS
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Secrets — never bake these into an image
+.env
+docker/.env
+.env.local
+.aws/
+
+# Build artifacts
+dist/
+build/

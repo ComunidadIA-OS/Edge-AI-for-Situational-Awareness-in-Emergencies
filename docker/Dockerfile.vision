@@ -1,0 +1,93 @@
+# XHeimdall Vision Inference — Jetson AGX target
+#
+# Runs OUR fine-tuned YOLOv26m model (xheimdall-yolo26m-20260525-101951,
+# trained on 3 064 thermal frames via AWS SageMaker — see models/MODEL_CARD.md)
+# through TensorRT FP16 on the Jetson's GPU. The base image is the official
+# Ultralytics Jetson image — used only as a runtime substrate (PyTorch + TensorRT
+# + CUDA + cuDNN). It contains NO model weights of its own; ours are fetched
+# by entrypoint-vision.sh from our GitHub release and exported to TensorRT FP16.
+#
+# Why an Ultralytics base instead of l4t-jetpack + manual PyTorch install:
+#   PyTorch wheels for Jetson are version-pinned to JetPack and tricky to build.
+#   Ultralytics maintains the official Jetson runtime, saving us ~30 min of
+#   first-build time and version-pinning headaches.
+#
+# Prerequisites on the Jetson host:
+#   - nvidia-container-toolkit installed (already standard on JetPack)
+#   - /dev/video0 (FLIR thermal camera) connected
+#   - best.pt either at models/best.pt OR fetched at first boot from GitHub
+#
+# Build (from project root):
+#   docker build -f docker/Dockerfile.vision -t xheimdall-vision:jetson .
+#
+# Run (normally handled by docker-compose.yml):
+#   docker run --rm --runtime=nvidia --privileged \
+#     -v $(pwd)/models:/models \
+#     --env-file docker/.env \
+#     xheimdall-vision:jetson
+
+# Official Ultralytics image for JetPack 6 (Jetson AGX Orin / Orin Nano).
+# Includes: PyTorch (Jetson build), TensorRT, CUDA, cuDNN, OpenCV, Ultralytics.
+# For JetPack 5 hosts, swap to ultralytics/ultralytics:latest-jetson-jetpack5.
+FROM ultralytics/ultralytics:latest-jetson-jetpack6
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgstreamer1.0-0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    v4l-utils \
+    alsa-utils \
+    libgpiod-dev \
+    procps \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Most ML deps (torch, ultralytics, opencv, numpy) are pre-installed in the base.
+# Add only what we strictly need on top.
+RUN pip3 install --no-cache-dir \
+    "pydantic>=2.5.0" \
+    "requests>=2.31.0" \
+    "fastapi>=0.110.0" \
+    "uvicorn[standard]>=0.27.0" \
+    "Jetson.GPIO>=2.1.0"
+
+# Copy the production packages only (no test/sim code on the Jetson).
+COPY convergence/ /app/convergence/
+COPY vision/ /app/vision/
+COPY edge/ /app/edge/
+COPY scripts/ /app/scripts/
+COPY docker/entrypoint-vision.sh /usr/local/bin/entrypoint-vision.sh
+RUN chmod +x /usr/local/bin/entrypoint-vision.sh
+
+ENV PYTHONPATH=/app \
+    MODEL_ENGINE_PATH=/models/best.engine \
+    CAMERA_SOURCE=/dev/video0 \
+    CAMERA_TEMPLATE=flir_boson \
+    CONVERGENCE_API_URL=http://convergence-api:8000 \
+    HEALTHCHECK_INTERVAL=5 \
+    MAX_RESTARTS=5 \
+    DRONE_LAT=41.6837 \
+    DRONE_LON=-0.8881 \
+    DRONE_ALT_M=120 \
+    DRONE_HEADING=0 \
+    BUZZER_GPIO_PIN=7 \
+    CRITICAL_BEEP_DURATION_S=0.6
+
+# The supervisor process doesn't serve HTTP. Docker considers the container
+# healthy as long as PID 1 (the supervisor) is running. Delegate liveness to
+# the convergence-api healthcheck instead.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
+    CMD pgrep -f "edge.supervisor" > /dev/null || exit 1
+
+# Entrypoint handles first-launch model fetch + TensorRT export, then exec's
+# the supervisor. On subsequent launches it skips straight to the supervisor.
+ENTRYPOINT ["/usr/local/bin/entrypoint-vision.sh"]

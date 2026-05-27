@@ -12,7 +12,7 @@ Heimdall is a **v0.1 prototype at TRL 3–4** (experimental proof-of-concept, va
 
 ## Near-term — v0.2 · toward TRL 5 (validation in a relevant environment)
 - **Multi-drone fusion.** Today one process serves one drone (`DRONE_ID`); aggregate detections from several drones into a single operational picture.
-- **Detection robustness.** Grow the training set beyond 1,500 thermal images, add a `smoke` class, and calibrate confidence with per-detection uncertainty to cut false positives/negatives.
+- **Detection robustness.** Grow the training with thermal images, add a `fire` class, and calibrate confidence with per-detection uncertainty to cut false positives/negatives.
 - **Durable history.** Replace the in-memory `ReportHistory` ring buffer with persistent time-series storage so `dA/dt` and `d²A/dt²` survive restarts and feed post-incident analysis.
 - **Field validation campaign.** Structured outdoor trials measuring detection and forecast accuracy against ground truth.
 

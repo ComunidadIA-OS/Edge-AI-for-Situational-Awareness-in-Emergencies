@@ -19,8 +19,20 @@ export function useMeteoReport(): ReturnType<typeof useQuery<MeteoReport>> {
     queryFn: async () => {
       const t0 = Date.now();
       const client = createJetsonClient(droneUrl);
-      const raw = await client.get("latest").json();
       const store = useConnectionStore.getState();
+
+      let raw: unknown;
+      try {
+        raw = await client.get("latest").json();
+      } catch (e) {
+        // Network/transport failure — the Jetson URL is unreachable. Mark the
+        // connection offline so the UI surfaces the error (and a way back to the
+        // connect screen) instead of spinning on "Connecting…" forever.
+        store.setConnectionState("offline");
+        store.setLastError(e instanceof Error ? e.message : "Connection failed");
+        throw e;
+      }
+
       const latency = Date.now() - t0;
       try {
         const report = MeteoReportSchema.parse(raw) as MeteoReport;

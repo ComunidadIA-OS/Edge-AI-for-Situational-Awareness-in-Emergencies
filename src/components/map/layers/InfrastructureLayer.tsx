@@ -47,6 +47,9 @@ export function useInfrastructureLayer() {
       getTextAnchor: "middle",
       getAlignmentBaseline: "bottom",
       fontFamily: "sans-serif",
+      // Build the glyph atlas from the characters actually present in the data.
+      // The default only covers ASCII, so accents/ñ (á é í ó ú ü ¿ ¡) get dropped.
+      characterSet: "auto",
       pickable: false,
     });
 

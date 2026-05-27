@@ -26,6 +26,13 @@ function ensureTerrainSource(map: maplibregl.Map) {
 }
 
 function applyTerrain(map: maplibregl.Map, enabled: boolean) {
+  // setTerrain/addSource throw "Style is not done loading" if called before the
+  // style is ready (e.g. on first mount, before the basemap tiles resolve, or
+  // right after a basemap swap). Defer until the style finishes loading.
+  if (!map.isStyleLoaded()) {
+    map.once("style.load", () => applyTerrain(map, enabled));
+    return;
+  }
   if (!enabled) {
     map.setTerrain(null);
     return;

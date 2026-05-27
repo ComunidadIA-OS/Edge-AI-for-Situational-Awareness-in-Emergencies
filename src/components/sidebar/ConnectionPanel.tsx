@@ -1,6 +1,6 @@
 "use client";
 
-import { Wifi, WifiOff, Loader2, Activity, Clock } from "lucide-react";
+import { Wifi, WifiOff, Loader2, Activity, Clock, Unplug } from "lucide-react";
 import { useConnectionStore } from "@/src/stores/connection-store";
 import { useMeteoReport } from "@/src/api/meteo-report";
 import { useDroneUrl } from "@/src/hooks/useDroneUrl";
@@ -63,8 +63,14 @@ export function ConnectionPanel() {
         </div>
         <button
           onClick={disconnect}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition"
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition active:scale-95",
+            "border-rose-700/50 bg-rose-900/30 text-rose-300",
+            "hover:border-rose-600 hover:bg-rose-800/50 hover:text-rose-100",
+            "focus:outline-none focus:ring-2 focus:ring-rose-500/60"
+          )}
         >
+          <Unplug className="w-3.5 h-3.5" />
           Disconnect
         </button>
       </div>

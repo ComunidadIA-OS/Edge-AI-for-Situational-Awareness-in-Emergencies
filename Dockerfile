@@ -14,7 +14,7 @@
 # ----- Stage 1: dependencies --------------------------------------------------
 FROM node:20-alpine AS deps
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy only the files needed to resolve the dependency graph so this layer
 # stays cached across source-only changes.
@@ -26,7 +26,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 # ----- Stage 2: builder -------------------------------------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

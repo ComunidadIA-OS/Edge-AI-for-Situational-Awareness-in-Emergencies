@@ -127,7 +127,7 @@ interface MeteoReport {
   prediction:            { trend, FWI, fuel_*, spread_rate, hourly[24], ... }
   situational_awareness: { summary, warnings[], recommended_actions[], infrastructure_at_risk[] }
   risk_buffers:          { distance_km, geometry }[]
-  drone_telemetry:       { lat, lon, altitude_m, heading_deg, speed_kmh, timestamp } | null
+  drone_telemetry:       { lat, lon, altitud_m, heading_deg, speed_kmh, timestamp } | null
 }
 ```
 
@@ -135,6 +135,7 @@ The authoritative definition lives in:
 
 - **Types:** `src/types/meteo-report.ts`
 - **Runtime schema:** `src/schemas/meteo-report.schema.ts`
+- **Example payload:** [`meteo-report.example.json`](./meteo-report.example.json) — a complete, schema-valid `MeteoReport v1` (24 hourly entries, fire perimeter, risk buffers, drone telemetry). The Jetson team can build and diff their `GET /latest` output against this file; if it passes `MeteoReportSchema`, Ground Control will render it.
 
 If the Jetson team changes the contract, those two files are the only places this repo needs to change.
 

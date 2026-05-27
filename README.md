@@ -179,4 +179,4 @@ Both halves share a single contract — `MeteoReport v1` — and nothing else.
 
 ## 10. License
 
-MIT (see repository root).
+Apache 2.0 (see repository root).

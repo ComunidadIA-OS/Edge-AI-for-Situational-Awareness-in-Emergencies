@@ -41,18 +41,8 @@ The design choice that matters: in the safety-critical path, propagation is comp
 
 ## Architecture
 
-```
-   Drone + NVIDIA Jetson AGX Orin                 Ground Control                External
- ┌──────────────────────────────┐   MeteoReport  ┌──────────────────────┐   ┌──────────────┐
- │  Thermal / RGB camera         │   (GeoJSON     │  3D Dashboard         │   │ Open-Meteo   │
- │   └─▶ Heimdall vision model   │    over REST)  │   MapLibre + Deck.gl  │◀──│ (weather)    │
- │        (YOLO26-based, FP16)   │───────────────▶│   React + Zustand     │   │ MapTiler     │
- │   └─▶ Convergence engine      │                │   Risk buffers + ETA  │   │ (basemap)    │
- │        (Balbi physics, FastAPI)│               └──────────────────────┘   └──────────────┘
- │   GPS · telemetry · 4G/5G/Sat │
- └──────────────────────────────┘
-        edge (Python)                                  ground control (Next.js)
-```
+![Heimdall Architecture](Heimdall.svg#gh-light-mode-only)
+![Heimdall Architecture](Heimdall-dark.svg#gh-dark-mode-only)
 
 Two services communicate over a typed REST contract (`MeteoReport`): the **vision** service posts detections; the **convergence** service enriches them with a physics-based spread forecast; the **dashboard** renders the result.
 

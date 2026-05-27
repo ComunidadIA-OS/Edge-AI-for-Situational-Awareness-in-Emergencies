@@ -24,5 +24,16 @@ export function useDroneUrl() {
     queryClient.removeQueries({ queryKey: queryKeys.meteoReport.all });
   }, [reset, queryClient]);
 
-  return { droneUrl, connect, disconnect };
+  // Re-attempt the current Jetson URL after a failure: clear the error, flip
+  // back to "connecting", and force a fresh fetch.
+  const retry = useCallback(() => {
+    const { droneUrl: url, setConnectionState, setLastError } =
+      useConnectionStore.getState();
+    if (!url) return;
+    setLastError(null);
+    setConnectionState("connecting");
+    queryClient.refetchQueries({ queryKey: queryKeys.meteoReport.all });
+  }, [queryClient]);
+
+  return { droneUrl, connect, disconnect, retry };
 }

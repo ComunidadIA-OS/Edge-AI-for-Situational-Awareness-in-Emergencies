@@ -5,6 +5,7 @@ import { useConnectionStore } from "@/src/stores/connection-store";
 import { useUIStore } from "@/src/stores/ui-store";
 import { useMeteoReport } from "@/src/api/meteo-report";
 import { Badge } from "@/src/components/ui/Badge";
+import { InfoTooltip } from "@/src/components/ui/InfoTooltip";
 import { CinemaModeButton } from "./CinemaMode";
 import { cn } from "@/src/lib/utils";
 import type { ConnectionState } from "@/src/types";
@@ -47,13 +48,19 @@ export function TopBar() {
       {report && (
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-4 w-px bg-zinc-700" />
-          <span className="text-xs text-zinc-300 font-medium truncate">
-            {Math.round(report.fire_perimeter.area_ha)} ha
-          </span>
+          <InfoTooltip content="Burned area — total hectares (ha) currently inside the detected fire perimeter. 1 ha ≈ a football pitch.">
+            <span className="text-xs text-zinc-300 font-medium truncate cursor-help border-b border-dotted border-zinc-600">
+              {Math.round(report.fire_perimeter.area_ha)} ha
+            </span>
+          </InfoTooltip>
           {fwi !== undefined && (
-            <Badge variant={fwiCritical ? "error" : fwi >= 50 ? "warning" : "default"}>
-              FWI {Math.round(fwi)}
-            </Badge>
+            <InfoTooltip content="Fire Weather Index (Canadian scale 0–100). It combines temperature, humidity, wind and dryness into one danger rating. ≥ 50 = high, ≥ 70 = critical fire weather.">
+              <span className="cursor-help">
+                <Badge variant={fwiCritical ? "error" : fwi >= 50 ? "warning" : "default"}>
+                  FWI {Math.round(fwi)}
+                </Badge>
+              </span>
+            </InfoTooltip>
           )}
           <span className="text-xs text-zinc-600 hidden md:block font-mono">
             v{report.metadata.model_version}

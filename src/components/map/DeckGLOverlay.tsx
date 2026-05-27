@@ -27,6 +27,11 @@ export function DeckGLOverlay({ map }: Props) {
   const drone = useDroneLayer();
 
   useEffect(() => {
+    // interleaved: false keeps deck.gl as a separate canvas above the basemap.
+    // interleaved: true would allow terrain draping but MapLibre re-inits its
+    // WebGL context when setTerrain() is called, which drops all custom layers
+    // registered by deck.gl — the layers disappear until the next full reload.
+    // For now interleaved: false is the only stable option with terrain enabled.
     const overlay = new MapboxOverlay({ interleaved: false, layers: [] });
     (map as unknown as { addControl: (ctrl: unknown) => void }).addControl(overlay);
     overlayRef.current = overlay;
@@ -39,14 +44,14 @@ export function DeckGLOverlay({ map }: Props) {
   useEffect(() => {
     overlayRef.current?.setProps({
       layers: [
-        ...riskBuffers,         // z=0
-        ...predictedPerimeters, // z=1
-        ...currentPerimeter,    // z=2
-        ...windVector,          // z=3
-        ...spreadVector,        // z=3
-        ...hotspots,            // z=4
-        ...infrastructure,      // z=5
-        ...drone,               // z=6
+        ...riskBuffers,
+        ...predictedPerimeters,
+        ...currentPerimeter,
+        ...windVector,
+        ...spreadVector,
+        ...hotspots,
+        ...infrastructure,
+        ...drone,
       ],
     });
   }, [riskBuffers, predictedPerimeters, currentPerimeter, windVector, spreadVector, hotspots, infrastructure, drone]);

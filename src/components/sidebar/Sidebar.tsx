@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Wifi, TrendingUp, Layers, ChevronRight } from "lucide-react";
-import { useUIStore } from "@/src/stores/ui-store";
+import { useUIStore, SIDEBAR_DEFAULT_W } from "@/src/stores/ui-store";
 import { ConnectionPanel } from "./ConnectionPanel";
 import { SituationalPanel } from "./SituationalPanel";
 import { LayersPanel } from "./LayersPanel";
@@ -22,7 +23,27 @@ const TABS: TabConfig[] = [
 ];
 
 export function Sidebar() {
-  const { sidebarOpen, activeTab, setActiveTab, toggleSidebar } = useUIStore();
+  const {
+    sidebarOpen, sidebarWidth, setSidebarWidth,
+    activeTab, setActiveTab, toggleSidebar,
+  } = useUIStore();
+  const [resizing, setResizing] = useState(false);
+
+  const startResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    setResizing(true);
+    const startX = e.clientX;
+    const startW = useUIStore.getState().sidebarWidth;
+    const onMove = (ev: PointerEvent) =>
+      setSidebarWidth(startW + (startX - ev.clientX));
+    const onUp = () => {
+      setResizing(false);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
 
   return (
     <>
@@ -39,17 +60,32 @@ export function Sidebar() {
           // Base (mobile): bottom sheet
           "fixed inset-x-0 bottom-0 z-20 max-h-[60vh] rounded-t-2xl",
           "bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-800",
-          "flex flex-col transition-transform duration-300 ease-out",
+          "flex flex-col",
           sidebarOpen ? "translate-y-0" : "translate-y-full",
-          // Tablet+: right sidebar
+          // Tablet+: right sidebar with dynamic width
           "md:top-14 md:bottom-0 md:inset-x-auto md:right-0",
           "md:max-h-none md:rounded-none md:border-t-0 md:border-l md:border-zinc-800",
-          "md:transition-all md:duration-300 md:translate-y-0",
-          sidebarOpen ? "md:w-64 lg:w-72" : "md:w-0 md:overflow-hidden"
+          "md:translate-y-0",
+          !resizing && "transition-all duration-300",
+          sidebarOpen ? "md:overflow-visible" : "md:w-0 md:overflow-hidden"
         )}
+        style={sidebarOpen ? { width: `${sidebarWidth}px` } : undefined}
       >
         {/* Drag handle — mobile visual indicator */}
         <div className="w-10 h-1 bg-zinc-600 rounded-full mx-auto my-2 md:hidden" />
+
+        {/* Resize grip — desktop, on the left edge of the sidebar */}
+        <div
+          className={cn(
+            "absolute top-0 left-0 bottom-0 w-1.5 z-10 hidden md:block",
+            "cursor-ew-resize touch-none",
+            "hover:bg-sky-500/40 transition-colors",
+            resizing && "bg-sky-500/40"
+          )}
+          onPointerDown={startResize}
+          onDoubleClick={() => setSidebarWidth(SIDEBAR_DEFAULT_W)}
+          title="Drag to resize · double-click to reset"
+        />
 
         {/* Tab bar */}
         <div className="flex border-b border-zinc-800 shrink-0">
@@ -87,9 +123,10 @@ export function Sidebar() {
           "hidden md:flex",
           "fixed top-1/2 -translate-y-1/2 z-30",
           "bg-zinc-800 hover:bg-zinc-700 border border-zinc-700",
-          "rounded-l-lg p-1.5 transition",
-          sidebarOpen ? "md:right-64 lg:right-72" : "right-0"
+          "rounded-l-lg p-1.5",
+          !resizing && "transition-all duration-300"
         )}
+        style={{ right: sidebarOpen ? `${sidebarWidth}px` : 0 }}
         aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
         <ChevronRight

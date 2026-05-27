@@ -1,4 +1,4 @@
-export type MapStyle = "osm" | "satellite" | "terrain" | "topo";
+export type MapStyle = "osm" | "streets" | "satellite" | "terrain" | "topo";
 
 export type BasemapConfig = {
   id: MapStyle;
@@ -9,25 +9,33 @@ export type BasemapConfig = {
 export const BASEMAPS: BasemapConfig[] = [
   {
     id: "osm",
-    label: "OpenStreetMap",
+    label: "Dark",
     styleUrl:
       "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   },
   {
+    // OpenFreeMap — fully open-source OSM vector tiles, no API key, no usage
+    // limits. Its "Liberty" style carries the rich street + POI/establishment
+    // labels (shops, schools, hospitals…) the dark Carto basemap omits.
+    id: "streets",
+    label: "Streets + POIs",
+    styleUrl: "https://tiles.openfreemap.org/styles/liberty",
+  },
+  {
     id: "satellite",
-    label: "Satellite",
+    label: "Voyager",
     styleUrl:
       "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
   },
   {
     id: "terrain",
-    label: "Terrain",
+    label: "Light",
     styleUrl:
       "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
   },
   {
     id: "topo",
-    label: "Topographic",
+    label: "Minimal",
     styleUrl:
       "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
   },

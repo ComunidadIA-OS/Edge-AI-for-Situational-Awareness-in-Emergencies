@@ -5,12 +5,13 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useMapStore } from "@/src/stores/map-store";
 import { useUIStore } from "@/src/stores/ui-store";
+import { useMeteoReport } from "@/src/api/meteo-report";
 import { BASEMAPS } from "@/src/types/map";
 import { DeckGLOverlay } from "./DeckGLOverlay";
 
 const TERRAIN_SOURCE_ID = "terrarium-dem";
 const TERRAIN_TILES = ["https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png"];
-const TERRAIN_EXAGGERATION = 1.3;
+const TERRAIN_EXAGGERATION = 2.5;
 
 function ensureTerrainSource(map: maplibregl.Map) {
   if (map.getSource(TERRAIN_SOURCE_ID)) return;
@@ -26,6 +27,13 @@ function ensureTerrainSource(map: maplibregl.Map) {
 }
 
 function applyTerrain(map: maplibregl.Map, enabled: boolean) {
+  // setTerrain throws "Style is not done loading" if the style isn't ready yet
+  // (e.g. on first mount or right after a basemap swap). Defer to the next
+  // style.load when that's the case so the call always lands on a ready style.
+  if (!map.isStyleLoaded()) {
+    map.once("style.load", () => applyTerrain(map, enabled));
+    return;
+  }
   if (!enabled) {
     map.setTerrain(null);
     return;
@@ -41,6 +49,8 @@ export function MapLibreMap() {
   const viewMode = useUIStore((s) => s.viewMode);
   const viewModeRef = useRef(viewMode);
   viewModeRef.current = viewMode;
+  const { data: report } = useMeteoReport();
+  const didFrameFireRef = useRef(false);
 
   const currentStyle = BASEMAPS.find((b) => b.id === mapStyle)?.styleUrl ?? BASEMAPS[0].styleUrl;
 
@@ -90,10 +100,17 @@ export function MapLibreMap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Swap basemap style
+  // Swap basemap style — skip the first run since the constructor already
+  // mounted `currentStyle` (a redundant setStyle restarts style loading and
+  // can race the terrain re-apply).
+  const didMountStyle = useRef(false);
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    if (!didMountStyle.current) {
+      didMountStyle.current = true;
+      return;
+    }
     map.setStyle(currentStyle);
   }, [currentStyle]);
 
@@ -104,6 +121,21 @@ export function MapLibreMap() {
     applyTerrain(map, viewMode === "3d");
     map.easeTo({ pitch: viewMode === "3d" ? 60 : 0, duration: 600 });
   }, [viewMode]);
+
+  // Frame the incident once the first report lands. The default camera sits
+  // over central Madrid (flat) while the fire is ~50 km north in the Sierra —
+  // without this the user sees neither the overlays nor any 3D relief.
+  useEffect(() => {
+    const map = mapRef.current;
+    const centroid = report?.fire_perimeter?.centroid;
+    if (!map || didFrameFireRef.current || !centroid) return;
+    const [lon, lat] = centroid;
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
+    didFrameFireRef.current = true;
+    // zoom 12.5 frames the fire plus its 5 km watch buffer; mountainous terrain
+    // here gives the 3D view visible relief.
+    map.easeTo({ center: [lon, lat], zoom: 12.5, duration: 1400 });
+  }, [report]);
 
   return (
     <div className="relative w-full h-full">

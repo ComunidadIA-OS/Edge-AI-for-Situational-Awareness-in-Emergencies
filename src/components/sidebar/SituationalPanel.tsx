@@ -1,6 +1,17 @@
 "use client";
 
-import { AlertTriangle, TrendingUp, Activity, Flame, Zap, CheckSquare } from "lucide-react";
+import { useState } from "react";
+import {
+  AlertTriangle,
+  TrendingUp,
+  Activity,
+  Flame,
+  Zap,
+  CheckSquare,
+  ChevronDown,
+  Gauge,
+  Building2,
+} from "lucide-react";
 import { useMeteoReport } from "@/src/api/meteo-report";
 import { SchemaValidationError } from "@/src/api/SchemaValidationError";
 import { InfoTooltip } from "@/src/components/ui/InfoTooltip";
@@ -22,12 +33,58 @@ function kpi(label: string, value: string | number | null, unit: string, highlig
   );
 }
 
+/** Collapsible disclosure block — keeps technical depth available without
+ *  overwhelming a first-time reader. Closed by default unless told otherwise. */
+function Section({
+  title,
+  icon,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border border-zinc-800 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider hover:bg-zinc-800/40 transition"
+      >
+        {icon}
+        <span className="flex-1 text-left">{title}</span>
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform flex-shrink-0", open && "rotate-180")} />
+      </button>
+      {open && <div className="px-3 pb-3 pt-0.5">{children}</div>}
+    </div>
+  );
+}
+
 const TREND_LABEL: Record<FireTrend, string> = {
   growing: "Growing",
   stable: "Stable",
   shrinking: "Shrinking",
   extinguishing: "Extinguishing",
 };
+
+/** Human phrasing for the at-a-glance sentence. */
+const TREND_PHRASE: Record<FireTrend, string> = {
+  growing: "growing",
+  stable: "holding steady",
+  shrinking: "receding",
+  extinguishing: "dying down",
+};
+
+function dangerWord(fwi: number): string {
+  if (fwi >= 70) return "critical";
+  if (fwi >= 50) return "high";
+  if (fwi >= 30) return "moderate";
+  return "low";
+}
 
 const RISK_COLOR: Record<RiskLevel, string> = {
   low: "bg-green-500/20 text-green-300 border-green-600/40",
@@ -66,9 +123,15 @@ export function SituationalPanel() {
   }
 
   const { prediction, situational_awareness: sa, fire_perimeter: fp } = report;
-  const isCritical =
-    prediction.fire_weather_index >= 70 ||
-    sa.warnings.some((w) => w.startsWith("CRITICAL"));
+  const fwi = prediction.fire_weather_index;
+  const isCritical = fwi >= 70 || sa.warnings.some((w) => w.startsWith("CRITICAL"));
+
+  // Nearest asset, for the plain-language headline.
+  const assets = sa.infrastructure_at_risk;
+  const nearest =
+    assets.length > 0
+      ? assets.reduce((a, b) => (b.distance_km < a.distance_km ? b : a))
+      : null;
 
   return (
     <div className="space-y-4 pb-2">
@@ -76,18 +139,43 @@ export function SituationalPanel() {
       {isCritical && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-900/60 border border-red-600/60 animate-pulse">
           <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-          <span className="text-xs font-semibold text-red-300">CRITICAL SITUATION — FWI {Math.round(prediction.fire_weather_index)}</span>
+          <span className="text-xs font-semibold text-red-300">CRITICAL SITUATION — FWI {Math.round(fwi)}</span>
         </div>
       )}
 
-      {/* KPIs */}
+      {/* At a glance — plain-language summary for first-time readers */}
+      <div className="rounded-lg bg-zinc-800/40 border border-zinc-700/60 px-3 py-2.5">
+        <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1 flex items-center gap-1">
+          <Flame className="w-3 h-3 text-orange-400" /> At a glance
+        </p>
+        <p className="text-xs text-zinc-200 leading-relaxed">
+          The fire now covers <strong className="text-white">{Math.round(fp.area_ha)} ha</strong>{" "}
+          and is <strong className="text-white">{TREND_PHRASE[prediction.trend]}</strong>. Fire-weather
+          danger is{" "}
+          <strong className={cn(fwi >= 70 ? "text-red-300" : fwi >= 50 ? "text-amber-300" : "text-zinc-200")}>
+            {dangerWord(fwi)}
+          </strong>{" "}
+          (FWI {Math.round(fwi)}).
+          {nearest && (
+            <>
+              {" "}
+              <strong className="text-white">{assets.length}</strong>{" "}
+              {assets.length === 1 ? "asset is" : "assets are"} in the risk zone — nearest is{" "}
+              <strong className="text-white">{nearest.name}</strong>, {nearest.distance_km.toFixed(1)} km
+              away (~{nearest.eta_hours.toFixed(0)}h).
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* Primary KPIs — the four headline numbers */}
       <div>
         <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <TrendingUp className="w-3 h-3" /> Key metrics
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {kpi("Current area", Math.round(fp.area_ha), "ha")}
-          {kpi("24h forecast", Math.round(prediction.predicted_area_24h_ha), "ha", isCritical)}
+          {kpi("Current area", Math.round(fp.area_ha), "ha", false, "Hectares currently inside the detected fire perimeter.")}
+          {kpi("24h forecast", Math.round(prediction.predicted_area_24h_ha), "ha", isCritical, "Predicted burned area 24 hours from now if conditions hold.")}
           {kpi(
             "Spread",
             Math.round(prediction.spread_rate_mh),
@@ -97,24 +185,10 @@ export function SituationalPanel() {
           )}
           {kpi(
             "FWI",
-            Math.round(prediction.fire_weather_index),
+            Math.round(fwi),
             "",
-            prediction.fire_weather_index >= 50,
+            fwi >= 50,
             "Fire Weather Index — Canadian standard scale 0–100. ≥ 70 means critical fire weather."
-          )}
-          {kpi(
-            "dA/dt",
-            prediction.growth_rate_m2_s !== null ? prediction.growth_rate_m2_s.toFixed(1) : null,
-            "m²/s",
-            false,
-            "Rate of area growth in m²/s. How fast the fire is currently expanding."
-          )}
-          {kpi(
-            "d²A/dt²",
-            prediction.acceleration_m2_s2 !== null ? prediction.acceleration_m2_s2.toFixed(2) : null,
-            "m²/s²",
-            false,
-            "Acceleration of area growth in m²/s². Positive = the fire is speeding up."
           )}
         </div>
       </div>
@@ -129,14 +203,10 @@ export function SituationalPanel() {
         <span className="text-xs text-zinc-500 ml-auto">{Math.round(prediction.confidence * 100)}% confidence</span>
       </div>
 
-      {/* Narrative text */}
-      <div className="space-y-2 text-xs text-zinc-300 leading-relaxed">
-        <p>{sa.summary}</p>
-        <p className="text-zinc-400">{sa.fire_behavior}</p>
-        <p className="text-zinc-500">{sa.weather_summary}</p>
-      </div>
+      {/* Summary narrative — model's own short readout */}
+      <p className="text-xs text-zinc-300 leading-relaxed">{sa.summary}</p>
 
-      {/* Warnings */}
+      {/* Warnings — kept up-front, they're actionable */}
       {sa.warnings.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -160,7 +230,7 @@ export function SituationalPanel() {
         </div>
       )}
 
-      {/* Recommended actions */}
+      {/* Recommended actions — kept up-front */}
       {sa.recommended_actions.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -177,12 +247,17 @@ export function SituationalPanel() {
         </div>
       )}
 
+      {/* ── Progressive disclosure: detail tucked into collapsibles ───────── */}
+
       {/* Infrastructure at risk */}
-      {sa.infrastructure_at_risk.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Infrastructure at risk</p>
+      {assets.length > 0 && (
+        <Section
+          title={`Infrastructure at risk (${assets.length})`}
+          icon={<Building2 className="w-3 h-3 text-zinc-400 flex-shrink-0" />}
+          defaultOpen={isCritical}
+        >
           <div className="space-y-1.5">
-            {sa.infrastructure_at_risk.map((item, i) => (
+            {assets.map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-xs">
                 <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-medium border", RISK_COLOR[item.risk_level])}>
                   {item.risk_level.toUpperCase()}
@@ -194,8 +269,42 @@ export function SituationalPanel() {
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
+
+      {/* Full fire & weather analysis */}
+      <Section
+        title="Detailed analysis"
+        icon={<Activity className="w-3 h-3 text-zinc-400 flex-shrink-0" />}
+      >
+        <div className="space-y-2 text-xs leading-relaxed">
+          <p className="text-zinc-400">{sa.fire_behavior}</p>
+          <p className="text-zinc-500">{sa.weather_summary}</p>
+        </div>
+      </Section>
+
+      {/* Advanced growth metrics — the derivatives newcomers find cryptic */}
+      <Section
+        title="Advanced metrics"
+        icon={<Gauge className="w-3 h-3 text-zinc-400 flex-shrink-0" />}
+      >
+        <div className="grid grid-cols-2 gap-2">
+          {kpi(
+            "dA/dt",
+            prediction.growth_rate_m2_s !== null ? prediction.growth_rate_m2_s.toFixed(1) : null,
+            "m²/s",
+            false,
+            "Rate of area growth in m²/s. How fast the fire is currently expanding."
+          )}
+          {kpi(
+            "d²A/dt²",
+            prediction.acceleration_m2_s2 !== null ? prediction.acceleration_m2_s2.toFixed(2) : null,
+            "m²/s²",
+            false,
+            "Acceleration of area growth in m²/s². Positive = the fire is speeding up."
+          )}
+        </div>
+      </Section>
 
       {/* Footer: model info */}
       <div className="pt-1 border-t border-zinc-800 text-[10px] text-zinc-600 space-y-0.5">

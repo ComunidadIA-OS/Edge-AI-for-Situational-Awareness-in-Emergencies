@@ -1,21 +1,28 @@
 "use client";
 
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, Fragment, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 
 type Props = { children: ReactNode; fallback?: ReactNode };
-type State = { error: Error | null };
+type State = { error: Error | null; resetKey: number };
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  state: State = { error: null, resetKey: 0 };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info.componentStack);
   }
+
+  // Clearing the error AND bumping resetKey forces the keyed subtree below to
+  // fully unmount/remount — without the key bump React reuses the broken
+  // instances and the fallback flashes straight back.
+  private handleRetry = () => {
+    this.setState((s) => ({ error: null, resetKey: s.resetKey + 1 }));
+  };
 
   render() {
     if (this.state.error) {
@@ -28,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {this.state.error.message}
             </p>
             <button
-              onClick={() => this.setState({ error: null })}
+              onClick={this.handleRetry}
               className="text-xs text-zinc-400 hover:text-zinc-200 underline mt-1"
             >
               Retry
@@ -37,6 +44,6 @@ export class ErrorBoundary extends Component<Props, State> {
         )
       );
     }
-    return this.props.children;
+    return <Fragment key={this.state.resetKey}>{this.props.children}</Fragment>;
   }
 }

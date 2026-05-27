@@ -7,6 +7,7 @@ import { LegendPanel } from "@/src/components/map/legend/LegendPanel";
 import { MapControls } from "@/src/components/map/MapControls";
 import { TimeSlider } from "@/src/components/map/TimeSlider";
 import { ConnectionWatcher } from "./ConnectionWatcher";
+import { ConnectionStatusBanner, ConnectingPill } from "./ConnectionStatusBanner";
 import { CinemaModeOverlay } from "./CinemaMode";
 import { OnboardingHint } from "./OnboardingHint";
 import { useUIStore } from "@/src/stores/ui-store";
@@ -25,6 +26,8 @@ export function DashboardScreen() {
       {!cinemaMode && <TopBar />}
       <main className={`flex-1 relative overflow-hidden ${cinemaMode ? "" : "mt-14"}`}>
         <MapLibreMap />
+        <ConnectionStatusBanner />
+        <ConnectingPill />
         {!cinemaMode && <OnboardingHint />}
         {!cinemaMode && <LegendPanel />}
         {!cinemaMode && <MapControls />}

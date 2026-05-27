@@ -6,7 +6,7 @@ import { useDroneUrl } from "@/src/hooks/useDroneUrl";
 import { useConnectionStore } from "@/src/stores/connection-store";
 import { cn } from "@/src/lib/utils";
 
-const DEFAULT_URL = "http://192.168.1.100:8000";
+const DEFAULT_URL = "http://jetson.tail6eac47.ts.net:8001";
 
 export function ConnectScreen() {
   const { connect } = useDroneUrl();

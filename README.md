@@ -253,6 +253,25 @@ The fixture (`tests/data/demo_replay.jsonl`) simulates a growing wildfire near Z
 
 ---
 
+## Troubleshooting
+
+Common issues when deploying or developing the edge stack. Full details in [howRun.md](./howRun.md).
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `convergence-api` exits immediately | Port 8000 already in use | `sudo lsof -i :8000` → kill the process, or change `HOST_PORT` in `.env` |
+| `ModuleNotFoundError: No module named 'convergence'` | Not installed in editable mode | `pip install -e ".[dev]"` from the project root |
+| `curl http://localhost:8000/health` → connection refused | Container not running or wrong port | `docker compose ps` → check status; verify `HOST_PORT` in `.env` |
+| TensorRT export fails with `Could not find any implementation` | ONNX ops not supported by TensorRT version on Jetson | Re-export with `--onnx-opset 17`; verify JetPack ≥ 6.0 |
+| `best.pt` not found, `fetch_model.py` fails | Model not in local cache or GitHub release | Download manually from [GitHub Releases](https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/releases) → place in project root |
+| CI fails on push (`tests/edge` or `tests/convergence`) | Dependency mismatch or Python version | Run `pip install -e ".[dev]"` locally; check `python --version` matches CI matrix (3.10–3.12) |
+| `docker compose up` → `no configuration file provided` | Not in the project root directory | `cd` to the repo root where `docker-compose.yml` lives |
+| Vision container beeps on startup | See [audible alert codes](#audible-alert-codes) above | 1 beep = no camera, 2 = API down, 3 = missing engine, 4 = fatal |
+
+If you hit something not listed here, open an issue using the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml).
+
+---
+
 ## Development
 
 ```powershell

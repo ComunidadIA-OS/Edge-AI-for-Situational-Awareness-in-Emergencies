@@ -1,0 +1,78 @@
+name: Bug Report
+description: Report a bug in the Heimdall edge stack (vision or convergence)
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve Heimdall! Please fill out the sections below.
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - convergence (weather / Balbi propagation)
+        - vision (thermal inference / detection)
+        - edge (orchestration / data pipeline)
+        - CI / tests
+        - documentation
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Steps to reproduce the behavior:
+        1. Command or script executed: `...`
+        2. Input data / payload used
+        3. See error
+      placeholder: |
+        python -m pytest tests/convergence/test_orchestrator.py -v
+        # or
+        curl -X POST http://localhost:8000/detect -H "Content-Type: application/json" -d '{...}'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      description: Paste any relevant logs or error output.
+      render: shell
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      description: Output of `python --version`
+      placeholder: "Python 3.11.9"
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Jetson AGX Orin (L4T / JetPack)
+        - Linux (x86_64)
+        - macOS
+        - Windows
+        - other
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context about the problem (model version, TensorRT version, camera model, etc.).

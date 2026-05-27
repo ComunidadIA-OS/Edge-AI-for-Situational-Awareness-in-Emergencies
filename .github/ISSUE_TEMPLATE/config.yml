@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Heimdall Discussions
+    url: https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/discussions
+    about: Ask questions, share ideas, or discuss the project with the community.
+  - name: Security Vulnerability
+    url: https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/security
+    about: Report a security vulnerability (private). See SECURITY.md for our policy.
+  - name: SEDIA Reto IA Responsable y Abierta
+    url: https://www.sedia.es/
+    about: Learn more about the competition this project was built for.

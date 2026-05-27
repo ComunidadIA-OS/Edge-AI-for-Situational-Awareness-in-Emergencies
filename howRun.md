@@ -1,18 +1,26 @@
-# howRun — Convergence API
+# How to run Heimdall on the edge (Jetson)
 
-How to start the convergence API (weather + propagation) locally or on the Jetson, what is inside the container, and how to verify it is working.
+How to start the Heimdall edge stack — **vision** (thermal fire detection) + **convergence** (weather + propagation) — locally or on the Jetson, what is inside each container, and how to verify everything is working.
 
-> For endpoint details and orchestrator internals, see [convergence/](./convergence/) and the SDD in [sdd/](./sdd/).
+> For endpoint details and orchestrator internals, see [convergence/](./convergence/). For the vision inference pipeline, see [vision/](./vision/).
 
 ---
 
 ## 1. What gets launched
 
-A single service: **`convergence-api`**, defined in [docker/docker-compose.yml](./docker/docker-compose.yml) and built from [docker/Dockerfile.jetson](./docker/Dockerfile.jetson).
+Two services, orchestrated via [docker/docker-compose.yml](./docker/docker-compose.yml):
 
-It is a FastAPI/uvicorn process that:
+### 1a. `vision` — thermal fire detection
 
-- Receives `FireDetectionPayload` from the drone via `POST /detect`.
+Built from [docker/Dockerfile.vision](./docker/Dockerfile.vision). Runs the YOLO26 model (TensorRT FP16) against a thermal camera feed and pushes `FireDetectionPayload` to the convergence API via `POST /detect`.
+
+- Requires CUDA / TensorRT on Jetson. Not covered in this guide — see [vision/README.md](./vision/README.md).
+
+### 1b. `convergence-api` — weather + propagation
+
+Built from [docker/Dockerfile.jetson](./docker/Dockerfile.jetson). A FastAPI/uvicorn process that:
+
+- Receives `FireDetectionPayload` from the vision service via `POST /detect`.
 - Calls the orchestrator in [convergence/orchestrator.py](./convergence/orchestrator.py) → fetches Open-Meteo, runs the Balbi 2015 prediction, builds the `MeteoReport`.
 - Keeps an **in-memory per-process cache** (`STATE` in [convergence/api.py](./convergence/api.py)): last payload, last report, `ReportHistory` ring-buffer tracking area evolution for `dA/dt` and `d²A/dt²` derivatives.
 - Runs an **async refresh loop** that every `REFRESH_SECONDS` re-executes the analysis against the last known payload — so weather data stays fresh and the derivative history keeps growing even when the drone is not pushing detections.
@@ -51,7 +59,7 @@ Environment variables (see [docker/.env.example](./docker/.env.example)):
 
 ## 3. Running locally
 
-From the `packages/edge/` directory:
+From the project root:
 
 ```powershell
 copy docker\.env.example docker\.env
@@ -120,13 +128,13 @@ The same `Dockerfile.jetson` and `docker-compose.yml` work on the Jetson — the
 Steps on the Jetson:
 
 ```bash
-# Clone the repo
-git clone https://github.com/<org>/xheimdall.git
-cd xheimdall/packages/edge
+# Clone the repo and checkout the edge branch
+git clone https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies
+cd Edge-AI-for-Situational-Awareness-in-Emergencies
+git checkout v0.1-EdgeDevice
 
-# Download model weights from S3
-aws s3 cp s3://xheimdall-models/training/xheimdall-yolo26m-20260525-101951/output/model.tar.gz .
-tar xzf model.tar.gz   # → best.pt
+# Download the model checkpoint (see releases or contact the team)
+# Place best.pt in the project root
 
 # Export to TensorRT FP16
 python scripts/export_tensorrt.py best.pt --fp16   # → best.engine

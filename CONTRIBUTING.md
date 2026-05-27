@@ -1,35 +1,56 @@
-# Guía de Contribución
+# Contributing to Heimdall
 
-¡Gracias por tu interés en contribuir a Heimdall Ground Control!
+Thank you for your interest in contributing.
 
-## Cómo empezar
+Heimdall is a wildfire situational-awareness system that spans three surfaces: edge AI on NVIDIA Jetson, a physics-based convergence engine, and a 3D operations dashboard. This repository is organized across branches — one per deployable surface.
 
-1. Haz un fork del repositorio
-2. Clona tu fork: `git clone https://github.com/TU_USUARIO/xheimdall-ground-control.git`
-3. Instala dependencias: `pnpm install`
-4. Crea una rama: `git checkout -b feat/mi-feature`
+## Project structure
 
-## Flujo de trabajo
+| Branch | What it is | Tech stack |
+|--------|-----------|------------|
+| `v0.1-Heimdall` | Project hub (you are here) | — |
+| `v0.1-EdgeDevice` | Jetson edge stack | Python, FastAPI, TensorRT |
+| `v0.1-GroundControl` | Operations dashboard | Next.js, TypeScript, MapLibre GL |
 
-- Mantén commits pequeños y atómicos con mensajes descriptivos en español o inglés
-- Ejecuta `pnpm exec tsc --noEmit` antes de cada commit para asegurar que TypeScript está limpio
-- Ejecuta `pnpm build` para verificar que el build de producción funciona
-- Abre un PR contra `main` con descripción clara del cambio
+Each branch is self-contained: its README explains how to set up, run, and contribute to that surface.
 
-## Convenciones de código
+## Getting started
 
-- **TypeScript estricto** — sin `any`, sin `@ts-ignore` injustificado
-- **Clean Architecture** — mantener la separación `types → schemas → api → stores → components`
-- **Sin comentarios de código obvios** — solo documentar WHY cuando no es evidente
-- **Imports absolutos** — usar `@/src/...` en lugar de rutas relativas
+1. Fork the repository
+2. Decide which surface you want to contribute to
+3. Check out the corresponding branch:
+   ```bash
+   git checkout v0.1-EdgeDevice     # for edge AI work
+   git checkout v0.1-GroundControl  # for dashboard work
+   ```
+4. Follow the branch-specific README for setup instructions
 
-## Reporte de bugs
+## Workflow
 
-Abre un issue describiendo:
-1. Comportamiento esperado vs. real
-2. Pasos para reproducir
-3. Versión del navegador y sistema operativo
+- Keep commits small and atomic with descriptive messages in English
+- Open a PR against the branch you are contributing to
+- All PRs require at least one review before merging
+- CI must pass (where configured)
 
-## Licencia
+## Code conventions
 
-Al contribuir aceptas que tu código se publique bajo la [licencia MIT](LICENSE).
+- **TypeScript (GroundControl)**: strict mode, no `any`, no unjustified `@ts-ignore`, absolute imports with `@/src/...`, Tailwind-first styling
+- **Python (EdgeDevice)**: type hints on public APIs, `ruff` for linting, `pytest` for tests
+- **Docs**: keep READMEs and runbooks up to date with any behavioral change
+
+## Reporting bugs
+
+Open an issue describing:
+
+1. Which branch/surface the bug affects
+2. Expected vs. actual behavior
+3. Steps to reproduce
+4. Environment details (OS, browser, Jetson model if applicable, demo/real mode)
+
+## Security
+
+For security vulnerabilities, please do **not** open a public issue. See [SECURITY.md](SECURITY.md) for the reporting process.
+
+## License
+
+By contributing, you agree that your code will be published under the terms described in [LICENSE](LICENSE) and [NOTICE](NOTICE) (Apache 2.0 for original code; AGPL-3.0 for YOLO-derived vision components).

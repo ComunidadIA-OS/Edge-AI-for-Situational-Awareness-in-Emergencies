@@ -86,6 +86,7 @@ cd Edge-AI-for-Situational-Awareness-in-Emergencies
 
 | Document | What it covers |
 |----------|----------------|
+| [SME_INDUSTRY_IMPACT.md](SME_INDUSTRY_IMPACT.md) | SME & Industry Impact: Democratizing situational awareness for the private sector |
 | [Model card](../../tree/v0.1-EdgeDevice/models/MODEL_CARD.md) | Vision model: data, metrics, intended use, limitations |
 | [howRun.md](../../tree/v0.1-EdgeDevice/howRun.md) | Full edge deployment guide |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |

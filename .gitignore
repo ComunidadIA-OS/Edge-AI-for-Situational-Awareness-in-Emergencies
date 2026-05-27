@@ -3,6 +3,9 @@ secrets/
 .secrets/
 *.csv
 .env
+.env.*
+!.env.example
+*.local
 *.pem
 *.key
 

@@ -1,0 +1,41 @@
+Heimdall — Edge AI for Situational Awareness in Emergencies (edge stack)
+Copyright 2026 Saúl Briceño, Carlos Langa, and ComunidadIA-OS contributors
+
+================================================================================
+Hybrid licensing
+================================================================================
+
+This branch (the Jetson edge stack) contains BOTH licenses:
+
+1. Apache License 2.0 (see LICENSE)
+   Applies to all original Heimdall code on this branch:
+     - the convergence engine    -> convergence/   (Balbi 2015 fire-spread physics)
+     - the edge orchestration     -> edge/          (supervisor, alerts, preflight)
+     - configs, scripts, and tests for the above.
+
+2. GNU Affero General Public License v3.0 (see LICENSE-AGPL-3.0.txt)
+   Applies to:
+     - the vision-inference code path  -> vision/    (it loads and runs the model)
+     - the "Heimdall-Vision-TensorRT-F16" model weights (GitHub Release asset).
+   These are derivative works of Ultralytics YOLO26 and therefore inherit its
+   AGPL-3.0 license. Fine-tuning on new data does not relicense them.
+   See https://www.ultralytics.com/license
+
+The two halves communicate only over a network REST boundary (the MeteoReport
+contract): the AGPL-3.0 vision service POSTs detections to the Apache-2.0
+convergence API. Full AGPL-3.0 text: https://www.gnu.org/licenses/agpl-3.0.txt
+
+================================================================================
+Third-party attributions
+================================================================================
+
+- Ultralytics YOLO26 (AGPL-3.0) — base architecture for the vision model.
+    https://docs.ultralytics.com/models/yolo26
+- Balbi et al. (2015) — rate-of-spread physical model used by convergence.
+- Standard surface fuel models (Scott & Burgan / Anderson) — fuel parameters.
+- Open-Meteo — weather data (open API).
+- FLAME 3 CV Dataset (Sycan Marsh) and NADIR Plots (Hanna Hammock 1 & 2) —
+    thermal training imagery; licensed by their original authors.
+
+Training data (thermal imagery) is the authors' proprietary asset and is not
+redistributed with this project.

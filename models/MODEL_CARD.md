@@ -1,7 +1,11 @@
-# Model Card: Heimdall TensorRT FP16
+# Model Card: Heimdall-Vision-TensorRT-F16
 
 Single-class thermal fire detection model, exported to TensorRT FP16 for NVIDIA Jetson deployment.
-Fine-tuned from YOLOv26m on AWS SageMaker using nadir thermal imagery.
+Fine-tuned from **Ultralytics YOLO26** on AWS SageMaker using nadir thermal imagery.
+
+> **License at a glance.** Because this model is fine-tuned from Ultralytics YOLO26, both the
+> weights and the vision-inference code path are distributed under **AGPL-3.0**, not Apache-2.0.
+> See [License](#license) below and the repository [NOTICE](../NOTICE).
 
 ---
 
@@ -9,14 +13,13 @@ Fine-tuned from YOLOv26m on AWS SageMaker using nadir thermal imagery.
 
 | Field | Value |
 |---|---|
-| **Name** | Heimdall TensorRT FP16 |
-| **Base architecture** | YOLOv26m (Ultralytics YOLO v8 family) |
+| **Name** | Heimdall-Vision-TensorRT-F16 |
+| **Base architecture** | [Ultralytics YOLO26](https://docs.ultralytics.com/models/yolo26) (AGPL-3.0) |
 | **Task** | Object detection — single class (`fire`) |
 | **Input modality** | Thermal / infrared images (FLIR, nadir-pointing) |
 | **Input size** | 1280 × 1280 px |
 | **Export precision** | **TensorRT FP16** (half precision) |
-| **Target hardware** | NVIDIA Jetson AGX Orin (JetPack 5.x) |
-| **Training job** | `xheimdall-yolo26m-20260525-101951` |
+| **Target hardware** | NVIDIA Jetson AGX Orin (JetPack 6.x) |
 | **Training date** | 2026-05-25 |
 
 ---
@@ -32,6 +35,10 @@ Metrics from the final completed epoch (200/200), evaluated on the held-out vali
 | **Precision** | 0.493 |
 | **Recall** | 0.456 |
 
+These numbers reflect a small, geographically narrow dataset (see
+[Limitations](#limitations-and-recommendations)). They are honest baseline figures for a
+competition prototype, **not** production accuracy claims.
+
 ---
 
 ## Training details
@@ -44,7 +51,6 @@ Metrics from the final completed epoch (200/200), evaluated on the held-out vali
 | **Training instance** | AWS SageMaker `ml.g5.xlarge` (NVIDIA A10G, 24 GB VRAM) |
 | **Training duration** | ~2 h 45 min (9 916 billable seconds) |
 | **Job status** | Completed |
-| **Model S3 path** | `s3://xheimdall-models/training/xheimdall-yolo26m-20260525-101951/output/model.tar.gz` |
 
 ---
 
@@ -56,7 +62,6 @@ Metrics from the final completed epoch (200/200), evaluated on the held-out vali
 | **Total dataset size** | 410 MB (images + labels) |
 | **Train / val / test split** | 70 % / 15 % / 15 % |
 | **Class labels** | 1 class: `fire` |
-| **S3 source** | `s3://xheimdall-datasets/yolo_dataset/` |
 
 ### Data sources
 
@@ -66,17 +71,20 @@ Metrics from the final completed epoch (200/200), evaluated on the held-out vali
 Imagery was acquired with nadir-facing FLIR cameras at altitudes ranging from 30 m to 200 m AGL.
 All annotations are axis-aligned bounding boxes around active flame regions.
 
+The trained weights are released as a GitHub Release asset; the **raw training imagery is the
+authors' proprietary asset and is not redistributed** with this project.
+
 ---
 
 ## Intended use
 
-Heimdall TensorRT FP16 is designed for **early fire detection** on drone platforms equipped with
+Heimdall-Vision-TensorRT-F16 is designed for **early fire detection** on drone platforms equipped with
 thermal cameras. It is intended as one component of a broader situational awareness pipeline
 (fire perimeter estimation, spread rate prediction, weather integration) — not as a standalone
 autonomous decision-making system.
 
 **This model requires human-in-the-loop oversight.** Detections should be reviewed by a trained
-operator before triggering any emergency response action.
+operator before triggering any emergency response action. The system never actuates.
 
 ---
 
@@ -97,6 +105,9 @@ deployment in environments not represented in the current training data. Specifi
 - Add night/dawn/dusk captures and varying humidity conditions
 - Incorporate data augmentation specific to thermal sensor noise models
 
+False positives (e.g. thermal noise classified as fire) and false negatives are expected and
+documented behaviour for an advisory system. Report systematic misclassifications via the issue tracker.
+
 ---
 
 ## Download
@@ -113,41 +124,44 @@ python -m vision.inference.export_tensorrt --model models/best.pt --fp16 --outpu
 
 ---
 
-## Citation
-
-If you use this model in your work, please cite:
-
-```bibtex
-@misc{heimdall2026,
-  title  = {Heimdall: Edge AI for Situational Awareness in Emergencies},
-  author = {XHeimdall contributors},
-  year   = {2026},
-  url    = {https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies},
-  note   = {Model: Heimdall TensorRT FP16, training job xheimdall-yolo26m-20260525-101951}
-}
-```
-
----
-
 ## License
 
-**Apache License 2.0** — see [LICENSE](../LICENSE) for the full text.
+**AGPL-3.0.** This model is fine-tuned from [Ultralytics YOLO26](https://www.ultralytics.com/license),
+which is licensed under AGPL-3.0. A model fine-tuned from an AGPL-3.0 base is a **derivative work**
+and inherits AGPL-3.0 — retraining on new data does *not* relicense it. Accordingly, **both the
+`Heimdall-Vision-TensorRT-F16` weights and the vision-inference code that loads them are released
+under AGPL-3.0**, regardless of the Apache-2.0 license used by the rest of Heimdall.
 
-The same license applies to the model weights (`best.pt`) distributed via
-GitHub Releases and to the inference code in this repository. Apache 2.0 is
-the de-facto standard for open ML models (PyTorch, TensorFlow, HuggingFace
-Transformers, Ultralytics YOLO all use it) and includes an explicit patent
-grant that protects downstream users from future patent claims.
+- Full AGPL-3.0 text: [LICENSE-AGPL-3.0.txt](../LICENSE-AGPL-3.0.txt) · <https://www.gnu.org/licenses/agpl-3.0.txt>
+- The Apache-2.0 components (convergence engine, edge orchestration, dashboard) communicate with
+  this AGPL-3.0 vision service only over a network REST boundary (the `MeteoReport` contract).
+  See the repository [NOTICE](../NOTICE) for the full split.
+
+> **Commercial / embedded use.** AGPL-3.0 obligations (including network/source-disclosure) apply.
+> If those terms do not fit your deployment, Ultralytics offers an
+> [Enterprise License](https://www.ultralytics.com/license) for the underlying YOLO architecture.
 
 ### Training data licenses (separate from this model's license)
 
 The training datasets are owned and licensed by their original authors:
 
-- **FLAME 3 CV Dataset** (Sycan Marsh) — check upstream license terms before
-  redistributing the raw frames; the trained weights derived from them
-  are released here under Apache 2.0.
+- **FLAME 3 CV Dataset** (Sycan Marsh) — check upstream license terms before redistributing the raw frames.
 - **NADIR Plots — Hanna Hammock 1 & 2** — same caveat.
 
-If you intend to redistribute the *raw training data*, contact the dataset
-authors. If you only redistribute the *trained model* (this release), the
-Apache 2.0 license applies.
+The trained weights are released under AGPL-3.0; the raw training data is not redistributed.
+
+---
+
+## Citation
+
+If you use this model in your work, please cite:
+
+```bibtex
+@software{heimdall_2026,
+  author = {Briceño, Saúl and Langa, Carlos and {ComunidadIA-OS contributors}},
+  title  = {Heimdall — Edge AI for Situational Awareness in Emergencies},
+  year   = {2026},
+  url    = {https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies},
+  note   = {Vision model: Heimdall-Vision-TensorRT-F16}
+}
+```

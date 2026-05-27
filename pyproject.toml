@@ -3,11 +3,15 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xheimdall-edge"
+name = "heimdall-edge"
 version = "0.1.0"
 description = "Heimdall edge — thermal fire detection (vision) + fire propagation forecasting (convergence)"
 requires-python = ">=3.10"
-authors = [{ name = "XHeimdall" }]
+authors = [
+  { name = "Saúl Briceño" },
+  { name = "Carlos Langa" },
+  { name = "ComunidadIA-OS contributors" },
+]
 
 dependencies = [
   "numpy>=1.24.0,<2.0",

@@ -1,6 +1,12 @@
-# Heimdall — Edge AI for Emergency Situational Awareness
+# 🛰️ Heimdall — Edge AI for Emergency Situational Awareness
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](../../LICENSE)
+> **Edge stack** (Jetson: vision + convergence). For the project hub and the dashboard branch, start at [`v0.1-Heimdall`](../../tree/v0.1-Heimdall).
+
+[![Code License: Apache 2.0](https://img.shields.io/badge/Code%20License-Apache%202.0-blue.svg)](LICENSE)
+[![Vision/Model License: AGPL-3.0](https://img.shields.io/badge/Vision%2FModel%20License-AGPL--3.0-orange.svg)](LICENSE-AGPL-3.0.txt)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Platform: Jetson AGX Orin](https://img.shields.io/badge/platform-Jetson%20AGX%20Orin-76B900.svg)](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)
+[![Responsible AI](https://img.shields.io/badge/AI-human--in--the--loop-success.svg)](#responsible-ai)
 
 Real-time wildfire detection and propagation forecasting on an NVIDIA Jetson AGX, streaming structured intelligence to field commanders.
 
@@ -26,13 +32,13 @@ Everything runs on the Jetson. No internet required for inference. Open-Meteo is
 ## Architecture
 
 ```
-packages/edge/
-├── vision/                 # Thermal perception layer
-│   ├── training/           # SageMaker fine-tuning, data preparation
-│   ├── inference/          # TensorRT inference loop, geo-projection, API poster
-│   └── export/             # ONNX → TensorRT FP16 export for Jetson
+.
+├── vision/                 # Thermal perception layer  (AGPL-3.0 — derives from YOLO26)
+│   ├── inference/          # TensorRT inference loop, geo-projection, API poster, FP16 export
+│   ├── io/                 # Thermal TIFF decoding + RGB cross-check
+│   └── utils/              # Config loading, debug visualisation
 │
-├── convergence/            # Propagation & weather layer (FastAPI microservice)
+├── convergence/            # Propagation & weather layer  (Apache-2.0, FastAPI microservice)
 │   ├── api.py              # FastAPI app: /detect, /latest, /history, /health
 │   ├── orchestrator.py     # Coordination: weather fetch → Balbi → risk buffers
 │   ├── forecast.py         # Balbi 2015 fire-spread physical model
@@ -42,11 +48,15 @@ packages/edge/
 │   ├── history.py          # ReportHistory ring-buffer (dA/dt, d²A/dt²)
 │   └── models.py           # Pydantic schemas: FireDetectionPayload → MeteoReport
 │
+├── edge/                   # Edge orchestration  (Apache-2.0)
+│   ├── supervisor.py       # Process supervision (vision ↔ API ↔ alerts)
+│   ├── preflight.py        # Camera + engine + audio preflight checks
+│   └── alerts.py           # Audible buzzer alert codes
+│
 ├── configs/                # Training and auto-label thresholds
-├── docker/                 # Dockerfile.jetson, docker-compose.yml, .env.example
-├── scripts/                # SageMaker launch, TensorRT export, demo replay
-├── tests/                  # Full test suite (54 tests)
-└── sdd/                    # System Design Document: discovery → tasks
+├── docker/                 # Dockerfile.jetson + Dockerfile.vision + docker-compose.yml
+├── scripts/                # Model fetch, TensorRT export, demo replay, stack verify
+└── tests/                  # edge + convergence + vision test suites
 ```
 
 ### Data flow
@@ -76,7 +86,7 @@ Dashboard / field tablet (any HTTP client)
 
 | Layer | Technology |
 |-------|-----------|
-| Detection model | YOLO26m (21.7 M params, 74.7 GFLOPs) fine-tuned on thermal fire imagery |
+| Detection model | `Heimdall-Vision-TensorRT-F16` — [Ultralytics YOLO26](https://docs.ultralytics.com/models/yolo26) fine-tuned for a single `fire` class on thermal imagery (AGPL-3.0) |
 | Inference runtime | TensorRT FP16 on Jetson AGX Orin |
 | Geo-projection | Flat-earth nadir camera model, GSD via HFOV + altitude, heading rotation matrix |
 | Propagation model | Balbi 2015 (physics-based, no ML) |
@@ -132,10 +142,16 @@ Interactive schema docs: `http://localhost:8000/docs` (Swagger UI, live on the J
 
 ---
 
-## Model: Heimdall TensorRT FP16
+## Model: `Heimdall-Vision-TensorRT-F16`
 
-YOLOv26m fine-tuned on AWS SageMaker (`xheimdall-yolo26m-20260525-101951`) for single-class
+[Ultralytics YOLO26](https://docs.ultralytics.com/models/yolo26) fine-tuned for single-class
 thermal fire detection, exported to TensorRT FP16 for NVIDIA Jetson.
+
+> **License note.** Because it derives from Ultralytics YOLO26, the weights **and** the
+> vision-inference code path (`vision/`) are **AGPL-3.0**, not Apache-2.0. The rest of this
+> branch (`convergence/`, `edge/`) is Apache-2.0. See [LICENSE](LICENSE),
+> [LICENSE-AGPL-3.0.txt](LICENSE-AGPL-3.0.txt), [NOTICE](NOTICE), and the
+> [model card](models/MODEL_CARD.md).
 
 | Metric (200 epochs, val split) | Value |
 |---|---|
@@ -241,11 +257,14 @@ The fixture (`tests/data/demo_replay.jsonl`) simulates a growing wildfire near Z
 
 ```powershell
 pip install -e ".[dev]"
-pytest                       # 54 tests
-pytest -x -q                 # fail-fast
+pytest tests/edge tests/convergence   # 50 tests — pure-Python physics + edge, run in CI
+pytest -x -q                          # fail-fast (full suite; vision tests need CUDA hardware)
 ```
 
-Test fixtures with real TIFF data and convergence payloads live in `tests/data/`.
+The `tests/edge` and `tests/convergence` suites (50 tests) import only pure Python and run on
+every push via [GitHub Actions](.github/workflows/ci.yml). The `tests/vision` suite exercises
+TensorRT/torch and requires a CUDA-capable machine. Test fixtures with real TIFF data and
+convergence payloads live in `tests/data/`.
 
 ---
 
@@ -261,6 +280,22 @@ Heimdall is designed for **human-in-the-loop** operations:
 
 ---
 
+## Responsible AI
+
+This edge stack is built for a *Responsible and Open AI* challenge, and the constraints are first-class:
+
+- **Advisory only, never autonomous.** Outputs are decision support for trained operators; the system never actuates.
+- **Explainable where it counts.** The fire-spread forecast is a citable physical model (Balbi 2015 + standard fuel models), not a black box. Machine learning is confined to perception.
+- **Honest about limits.** Model metrics, the narrow training distribution, and false-positive/negative expectations are documented in the [model card](models/MODEL_CARD.md).
+- **Privacy.** Thermal imagery may incidentally capture people; downstream consumers must comply with applicable privacy law. Training data is not redistributed.
+
+See [SECURITY.md](SECURITY.md) for the full AI-safety scope.
+
 ## License
 
-Apache-2.0 — see [LICENSE](../../LICENSE).
+Heimdall's edge stack uses **hybrid licensing** (see [LICENSE](LICENSE), [LICENSE-AGPL-3.0.txt](LICENSE-AGPL-3.0.txt), and [NOTICE](NOTICE)):
+
+- **Apache-2.0** — original Heimdall code: the convergence engine (`convergence/`) and edge orchestration (`edge/`).
+- **AGPL-3.0** — the vision-inference code path (`vision/`) and the `Heimdall-Vision-TensorRT-F16` model weights, as derivatives of [Ultralytics YOLO26](https://www.ultralytics.com/license).
+
+The two halves communicate only over a network REST boundary (the `MeteoReport` contract).

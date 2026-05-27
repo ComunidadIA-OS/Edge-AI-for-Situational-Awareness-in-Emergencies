@@ -1,0 +1,40 @@
+Heimdall — Edge AI for Situational Awareness in Emergencies
+Copyright 2026 Saúl Briceño, Carlos Langa, and ComunidadIA-OS contributors
+
+================================================================================
+Hybrid licensing
+================================================================================
+
+This repository is distributed under TWO licenses:
+
+1. Apache License 2.0 (see LICENSE)
+   Applies to all original Heimdall code, including:
+     - the convergence engine (physics-based fire-spread forecasting),
+     - the edge orchestration and alerting,
+     - the Ground Control dashboard.
+
+2. GNU Affero General Public License v3.0 (AGPL-3.0)
+   Applies to:
+     - the vision-inference code path that uses Ultralytics YOLO, and
+     - the "Heimdall-Vision-TensorRT-F16" model weights.
+   These are derivative works of Ultralytics YOLO and therefore inherit its
+   AGPL-3.0 license. See https://www.ultralytics.com/license
+
+The AGPL-3.0 component runs as a separate vision service that communicates with
+the Apache-2.0 components only over a network REST boundary (the MeteoReport
+contract). The full text of AGPL-3.0 is available at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+================================================================================
+Third-party attributions
+================================================================================
+
+- Ultralytics YOLO26 (AGPL-3.0) — base architecture for the vision model.
+    https://docs.ultralytics.com/models/yolo26
+- Balbi et al. (2015) — rate-of-spread physical model used by convergence.
+- Standard surface fuel models (Scott & Burgan / Anderson) — fuel parameters.
+- Open-Meteo — weather data (CC BY 4.0 / open API).
+- MapLibre GL, Deck.gl, Next.js — dashboard rendering stack.
+
+Training data (thermal imagery) is the authors' proprietary asset and is not
+redistributed with this project.

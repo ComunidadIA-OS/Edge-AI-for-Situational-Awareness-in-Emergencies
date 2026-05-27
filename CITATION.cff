@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "Heimdall — Edge AI for Situational Awareness in Emergencies"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Briceño"
+    given-names: "Saúl"
+    alias: "AndreSaul16"
+  - family-names: "Langa"
+    given-names: "Carlos"
+    alias: "clanga-paintec"
+  - name: "ComunidadIA-OS contributors"
+repository-code: "https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies"
+url: "https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies"
+abstract: >-
+  Heimdall is an edge-AI system for real-time wildfire situational awareness.
+  It detects fire on an NVIDIA Jetson with a custom thermal vision model
+  (Heimdall-Vision-TensorRT-F16), forecasts fire spread with an explainable
+  physical model (Balbi 2015), and streams results to a 3D operations
+  dashboard. The system is advisory only and requires human-in-the-loop
+  validation. Original code is Apache-2.0; the YOLO-derived vision model is
+  AGPL-3.0.
+keywords:
+  - edge-ai
+  - wildfire-detection
+  - jetson
+  - tensorrt
+  - thermal-imaging
+  - fire-forecasting
+  - responsible-ai
+  - human-in-the-loop
+license: Apache-2.0
+version: "0.1.0"
+date-released: "2026-05-27"

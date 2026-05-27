@@ -1,108 +1,148 @@
-# Heimdall — Edge AI for Situational Awareness in Emergencies
+<div align="center">
 
-> **Hackathon SEDIA · Reto IA Responsable y Abierta en Industria · Mayo 2026**
+# 🛰️ Heimdall — Edge AI for Situational Awareness in Emergencies
 
-Sistema de conciencia situacional en tiempo real para emergencias de incendios forestales. Detecta fuego desde el borde (NVIDIA Jetson + YOLOv9 + TensorRT) y despliega resultados en un dashboard 3D interactivo para los equipos de respuesta.
+**Real-time wildfire situational awareness, from the edge to the command post.**
+Detect fire on-device (NVIDIA Jetson + TensorRT), forecast its spread with physics — not a black box — and stream it to a 3D operations dashboard.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-teal)](https://fastapi.tiangolo.com)
+> 🏆 **Hackathon SEDIA · Reto IA Responsable y Abierta en Industria · Aragón, mayo 2026**
 
----
+[![Code License: Apache 2.0](https://img.shields.io/badge/Code%20License-Apache%202.0-blue.svg)](LICENSE)
+[![Model License: AGPL-3.0](https://img.shields.io/badge/Model%20License-AGPL--3.0-orange.svg)](NOTICE)
+[![Release: Heimdall-Vision-TensorRT-F16](https://img.shields.io/badge/release-Heimdall--Vision--TensorRT--F16-success)](https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/releases)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Platform: Jetson AGX Orin](https://img.shields.io/badge/platform-Jetson%20AGX%20Orin-76B900.svg)](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)
+[![Responsible AI](https://img.shields.io/badge/AI-human--in--the--loop-success.svg)](#-responsible-ai)
 
-## Arquitectura
-
-```
-Dron con Jetson AGX              Ground Control                 Servicios externos
-┌─────────────────────┐         ┌──────────────────┐          ┌──────────────────┐
-│ YOLOv9 + TensorRT   │──REST──▶│ Dashboard (Next)  │◀────────│ NASA FIRMS       │
-│ GPS + Telemetría    │  API    │ MapLibre + Deck   │         │ Open-Meteo       │
-│ Starlink / 4G / 5G  │         │ Zustand + React   │         │ MapTiler tiles    │
-└─────────────────────┘         └──────────────────┘          └──────────────────┘
-```
+</div>
 
 ---
 
-## Estructura del monorepo
+> **Resumen (ES).** Heimdall detecta incendios desde un dron con NVIDIA Jetson (modelo de visión térmica propio sobre TensorRT FP16), **predice la propagación del fuego con un modelo físico** (Balbi 2015) en lugar de una caja negra, y lo despliega en un dashboard 3D para los equipos de respuesta. El sistema es **siempre asesor, nunca autónomo**: toda salida requiere validación humana.
+
+## Table of contents
+
+- [Why Heimdall](#why-heimdall)
+- [Architecture](#architecture)
+- [Repository layout](#repository-layout)
+- [Quick start](#quick-start)
+- [The vision model](#the-vision-model)
+- [Documentation](#documentation)
+- [Responsible AI](#-responsible-ai)
+- [Authors](#authors)
+- [License](#license)
+- [Citation](#citation)
+
+## Why Heimdall
+
+Emergencies move faster than humans can process raw video feeds. Heimdall closes that gap at the edge: a drone sees fire, and within seconds the command post sees **where it will be**, not just where it is.
+
+The design choice that matters: in the safety-critical path, propagation is computed with an **explainable physical model** (Balbi rate-of-spread + standard fuel models), not an opaque end-to-end network. Machine learning is confined to **perception** (detecting fire in thermal imagery); the **forecast** is physics and doctrine you can audit, cite, and defend. Every output is advisory and requires a human in the loop.
+
+## Architecture
 
 ```
-heimdall/
-├── .github/            # CI/CD workflows, issue/PR templates
-├── .opencode/          # Agentes y skills de IA
+   Drone + NVIDIA Jetson AGX Orin                 Ground Control                External
+ ┌──────────────────────────────┐   MeteoReport  ┌──────────────────────┐   ┌──────────────┐
+ │  Thermal / RGB camera         │   (GeoJSON     │  3D Dashboard         │   │ Open-Meteo   │
+ │   └─▶ Heimdall vision model   │    over REST)  │   MapLibre + Deck.gl  │◀──│ (weather)    │
+ │        (YOLO26-based, FP16)   │───────────────▶│   React + Zustand     │   │ MapTiler     │
+ │   └─▶ Convergence engine      │                │   Risk buffers + ETA  │   │ (basemap)    │
+ │        (Balbi physics, FastAPI)│               └──────────────────────┘   └──────────────┘
+ │   GPS · telemetry · 4G/5G/Sat │
+ └──────────────────────────────┘
+        edge (Python)                                  ground control (Next.js)
+```
+
+Two services communicate over a typed REST contract (`MeteoReport`): the **vision** service posts detections; the **convergence** service enriches them with a physics-based spread forecast; the **dashboard** renders the result.
+
+## Repository layout
+
+The project is split across three branches, one per deployable surface. Each branch is self-contained and documented:
+
+| Branch | Surface | Stack | Open it |
+|--------|---------|-------|---------|
+| **`v0.1-Heimdall`** (this branch, default) | Project hub + monorepo structure | — | you are here |
+| **[`v0.1-EdgeDevice`](../../tree/v0.1-EdgeDevice)** | Jetson edge stack: vision + convergence | Python 3.10+, FastAPI, TensorRT, Ultralytics | edge AI |
+| **[`v0.1-GroundControl`](../../tree/v0.1-GroundControl)** | Operations dashboard | Next.js, TypeScript, MapLibre GL, Deck.gl | dashboard |
+
+```
+heimdall/                 # monorepo structure (this branch)
 ├── packages/
-│   ├── edge/           # Jetson (Python 3.11, FastAPI, YOLOv9 + TensorRT)
-│   ├── dashboard/      # Ground Control (Next.js 16, MapLibre GL, Deck.gl)
-│   └── simulator/      # Simulador de telemetría para desarrollo local
-├── pnpm-workspace.yaml
-├── package.json        # Scripts y dependencias globales
-├── CONTRIBUTING.md
-├── CODE_OF_CONDUCT.md
-└── LICENSE
+│   ├── edge/             # Jetson edge stack  → see branch v0.1-EdgeDevice
+│   ├── dashboard/        # Ground Control      → see branch v0.1-GroundControl
+│   └── simulator/        # synthetic telemetry for hardware-free dev
+├── CONTRIBUTING.md · CODE_OF_CONDUCT.md · SECURITY.md · CHANGELOG.md
+├── CITATION.cff · LICENSE · NOTICE
+└── package.json          # pnpm workspace
 ```
 
-| Paquete | Stack | Descripción |
-|---------|-------|-------------|
-| `packages/edge` | Python 3.11, FastAPI, YOLOv9, TensorRT | API REST de detección en el Jetson a bordo del dron |
-| `packages/dashboard` | Next.js 16, TypeScript, MapLibre GL, Deck.gl | Dashboard de conciencia situacional para el equipo en tierra |
-| `packages/simulator` | TypeScript / Python | Generador de telemetría sintética para desarrollo sin hardware |
-
----
-
-## Inicio rápido
-
-### Requisitos
-
-- Node.js ≥ 18 + pnpm ≥ 9
-- Python ≥ 3.11 (para `packages/edge` y `packages/simulator`)
+## Quick start
 
 ```bash
 git clone https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies.git
 cd Edge-AI-for-Situational-Awareness-in-Emergencies
-pnpm install
 ```
 
-### Dashboard (Ground Control)
+- **Edge stack (Jetson, one-command deploy):** `git checkout v0.1-EdgeDevice` and follow its [README](../../tree/v0.1-EdgeDevice) / [howRun.md](../../tree/v0.1-EdgeDevice/howRun.md).
+- **Dashboard:** `git checkout v0.1-GroundControl` and follow its [README](../../tree/v0.1-GroundControl).
 
-```bash
-pnpm dev:dashboard        # Modo desarrollo con datos simulados (MSW)
-pnpm build:dashboard      # Build estático → packages/dashboard/out/
-```
+## The vision model
 
-### Edge (Jetson)
+**`Heimdall-Vision-TensorRT-F16`** — an [Ultralytics YOLO26](https://docs.ultralytics.com/models/yolo26) detector fine-tuned for a single class, `fire`, on 1,500+ thermal images, exported to **TensorRT FP16** for the Jetson AGX Orin. See the [model card](../../tree/v0.1-EdgeDevice/models/MODEL_CARD.md) and the [release](https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/releases).
 
-```bash
-cd packages/edge
-python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
+> **License note:** because it derives from Ultralytics YOLO, the model weights and the vision-inference code are distributed under **AGPL-3.0**. The rest of Heimdall's original code is **Apache-2.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
-### Simulador
+## Documentation
 
-```bash
-pnpm dev:simulator        # Arranca el generador de telemetría sintética
+| Document | What it covers |
+|----------|----------------|
+| [Model card](../../tree/v0.1-EdgeDevice/models/MODEL_CARD.md) | Vision model: data, metrics, intended use, limitations |
+| [howRun.md](../../tree/v0.1-EdgeDevice/howRun.md) | Full edge deployment guide |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards (Contributor Covenant) |
+| [SECURITY.md](SECURITY.md) | Reporting vulnerabilities + AI-safety scope |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+
+## 🤝 Responsible AI
+
+Heimdall is built for a *Responsible and Open AI* challenge, and the constraints are first-class:
+
+- **Advisory only, never autonomous.** The system informs human decision-makers; it never actuates. Every output requires human-in-the-loop validation.
+- **Explainable where it counts.** The fire-spread forecast is a citable physical model (Balbi 2015 + standard fuel models), not a black box.
+- **No certification claim.** This is a research/competition prototype, not a certified life-safety system. Re-validate before any operational use.
+- **Privacy.** Thermal imagery may incidentally capture people; downstream consumers must comply with applicable privacy law. Training data is not redistributed.
+- **Open.** Code is Apache-2.0; the YOLO-derived model is AGPL-3.0 — both fully open. See [SECURITY.md](SECURITY.md) for the complete AI-safety scope.
+
+## Authors
+
+- **Saúl Briceño** — [@AndreSaul16](https://github.com/AndreSaul16)
+- **Carlos Langa** — [@clanga-paintec](https://github.com/clanga-paintec)
+- ComunidadIA-OS contributors
+
+## License
+
+Heimdall uses **hybrid licensing** (see [LICENSE](LICENSE) and [NOTICE](NOTICE)):
+
+- **Apache-2.0** — all original Heimdall code: the convergence engine, edge orchestration, and the Ground Control dashboard.
+- **AGPL-3.0** — the vision-inference code path and the `Heimdall-Vision-TensorRT-F16` model weights, as derivatives of [Ultralytics YOLO](https://www.ultralytics.com/license).
+
+## Citation
+
+If you use Heimdall in your work, please cite it (a "Cite this repository" button is available on GitHub, powered by [CITATION.cff](CITATION.cff)):
+
+```bibtex
+@software{heimdall_2026,
+  author  = {Briceño, Saúl and Langa, Carlos and {ComunidadIA-OS contributors}},
+  title   = {Heimdall — Edge AI for Situational Awareness in Emergencies},
+  year    = {2026},
+  url      = {https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies},
+  note    = {Vision model: Heimdall-Vision-TensorRT-F16}
+}
 ```
 
 ---
 
-## API del Jetson
-
-El dashboard espera los siguientes endpoints REST en el Jetson:
-
-| Endpoint | Intervalo | Descripción |
-|----------|-----------|-------------|
-| `GET /api/status` | 5s | Estado del sistema, modelo IA, conectividad |
-| `GET /api/telemetry` | 2s | Posición GPS, actitud, batería, modo de vuelo |
-| `GET /api/detections` | 2s | Detecciones GeoJSON de fuego/humo con confianza |
-| `GET /api/mission` | mount | Información de misión, waypoints, área de interés |
-
----
-
-## Contribuir
-
-Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir un PR.
-
-## Licencia
-
-[MIT](LICENSE) © 2026 Heimdall Team
+<div align="center">
+<sub>Built for the SEDIA Reto IA Responsable y Abierta · Aragón 2026 · by ComunidadIA-OS</sub>
+</div>

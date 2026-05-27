@@ -17,7 +17,7 @@ By shifting the paradigm from *reactive observation* to *predictive intelligence
 ## Sustainable Adoption Strategy (The Open-Core Engine)
 To guarantee that this technology truly penetrates the market and remains sustainable, we have designed a dual adoption model that balances community innovation with commercial viability:
 
-1.  **100% Open Core:** The AI engine, vision models (YOLOv8, segmentation), and inference logic remain completely *open-source*. This protects community innovation, complies with our licensing, and ensures free access for research and public entities.
+1.  **100% Open Core:** The AI engine, vision models (YOLO26, segmentation), and inference logic remain completely *open-source*. This protects community innovation, complies with our licensing, and ensures free access for research and public entities.
 2.  **Rapid Deployment Ecosystem (Enterprise Ready):** We facilitate industrial adoption by eliminating hardware and infrastructure barriers. We offer pre-configured, ready-to-fly processing nodes (based on NVIDIA Jetson architecture), natively integrated with our *Ground Control* platform under a scalable, subscription-based access model. 
 
 This allows any SME to acquire a Heimdall system, power it up, and have a world-class operational command center in minutes. This *open-core* approach ensures zero barriers to entry for the industry, while simultaneously creating a self-sustaining ecosystem that funds the continuous evolution of the open core. It is cutting-edge technology, packaged for the operational and commercial reality of the modern enterprise.

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Literal
 
 FireIntensity = Literal["low", "moderate", "high", "extreme"]
@@ -189,19 +189,25 @@ class MeteoReport:
         return self._to_serializable()
 
     def _to_serializable(self) -> dict:
-        result: dict = {}
-        for key, value in asdict(self).items():
-            result[key] = self._convert_value(value)
-        return result
+        return MeteoReport._walk(self)  # type: ignore[return-value]
 
     @staticmethod
-    def _convert_value(value: object) -> object:
-        if isinstance(value, datetime):
-            return value.isoformat()
-        if hasattr(value, "to_geojson"):
-            return value.to_geojson()
-        if isinstance(value, list):
-            return [MeteoReport._convert_value(v) for v in value]
-        if isinstance(value, dict):
-            return {k: MeteoReport._convert_value(v) for k, v in value.items()}
-        return value
+    def _walk(obj: object) -> object:
+        # Walk the dataclass tree directly so `to_geojson()` is honored.
+        # asdict() would flatten GeoPolygon → {"coordinates": [...]} and lose
+        # the {"type": "Polygon"} discriminator that ground-control's Zod
+        # schema requires; same for GeoPoint → [lon, lat].
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if hasattr(obj, "to_geojson"):
+            return obj.to_geojson()  # type: ignore[attr-defined]
+        if hasattr(obj, "__dataclass_fields__"):
+            return {
+                f: MeteoReport._walk(getattr(obj, f))
+                for f in obj.__dataclass_fields__  # type: ignore[attr-defined]
+            }
+        if isinstance(obj, (list, tuple)):
+            return [MeteoReport._walk(v) for v in obj]
+        if isinstance(obj, dict):
+            return {k: MeteoReport._walk(v) for k, v in obj.items()}
+        return obj

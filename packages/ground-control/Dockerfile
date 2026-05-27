@@ -12,15 +12,15 @@
 # =============================================================================
 
 # ----- Stage 1: dependencies --------------------------------------------------
-# Node 22+ is required: the pinned pnpm@11.1.2 uses the `node:sqlite` built-in,
-# which only exists from Node v22.13. Node 20 fails with ERR_UNKNOWN_BUILTIN_MODULE.
+# Node 22 base image with pnpm 10 (via corepack). pnpm 10 needs Node 18+, so the
+# 22 base sits comfortably above the floor and matches CI.
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy only the files needed to resolve the dependency graph so this layer
 # stays cached across source-only changes.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --prefer-offline

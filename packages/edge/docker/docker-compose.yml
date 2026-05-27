@@ -1,4 +1,4 @@
-# XHeimdall edge — full stack (convergence API + vision inference)
+# Heimdall edge — full stack (convergence API + vision inference)
 #
 # Quick start (from project root):
 #   cp docker/.env.example docker/.env   # adjust if needed

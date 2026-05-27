@@ -241,7 +241,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="XHeimdall Convergence API",
+    title="Heimdall Convergence API",
     version="0.1.0",
     description="Fire detection ingestion + meteo propagation forecast.",
     lifespan=lifespan,

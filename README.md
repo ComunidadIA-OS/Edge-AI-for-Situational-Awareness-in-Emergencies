@@ -9,7 +9,7 @@ Detect fire on-device (NVIDIA Jetson + TensorRT), forecast its spread with physi
 
 [![Code License: Apache 2.0](https://img.shields.io/badge/Code%20License-Apache%202.0-blue.svg)](LICENSE)
 [![Model License: AGPL-3.0](https://img.shields.io/badge/Model%20License-AGPL--3.0-orange.svg)](NOTICE)
-[![Release: Heimdall-Vision-TensorRT-F16](https://img.shields.io/badge/release-Heimdall--Vision--TensorRT--F16-success)](https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/releases)
+[![Release: Heimdall-Vision-TensorRT-F16](https://img.shields.io/badge/release-Heimdall--Vision--TensorRT--F16-success)](https://github.com/ComunidadIA-OS/Edge-AI-for-Situational-Awareness-in-Emergencies/releases/tag/Heimdall-Vision-TensorRT-F16)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Platform: Jetson AGX Orin](https://img.shields.io/badge/platform-Jetson%20AGX%20Orin-76B900.svg)](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)
 [![Responsible AI](https://img.shields.io/badge/AI-human--in--the--loop-success.svg)](#-responsible-ai)
@@ -41,8 +41,7 @@ The design choice that matters: in the safety-critical path, propagation is comp
 
 ## Architecture
 
-![Heimdall Architecture](Heimdall.svg#gh-light-mode-only)
-![Heimdall Architecture](Heimdall-dark.svg#gh-dark-mode-only)
+![Heimdall Architecture](Heimdall.webp)
 
 Two services communicate over a typed REST contract (`MeteoReport`): the **vision** service posts detections; the **convergence** service enriches them with a physics-based spread forecast; the **dashboard** renders the result.
 
@@ -60,8 +59,7 @@ The project is split across three branches, one per deployable surface. Each bra
 heimdall/                 # monorepo structure (this branch)
 ├── packages/
 │   ├── edge/             # Jetson edge stack  → see branch v0.1-EdgeDevice
-│   ├── dashboard/        # Ground Control      → see branch v0.1-GroundControl
-│   └── simulator/        # synthetic telemetry for hardware-free dev
+│   └── ground-control/   # Ground Control      → see branch v0.1-GroundControl
 ├── CONTRIBUTING.md · CODE_OF_CONDUCT.md · SECURITY.md · CHANGELOG.md
 ├── CITATION.cff · LICENSE · NOTICE
 └── package.json          # pnpm workspace

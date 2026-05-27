@@ -1,4 +1,10 @@
-"""Jetson AGX Inference — XHeimdall Fire Detection.
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright 2026 Saúl Briceño, Carlos Langa, and ComunidadIA-OS contributors
+#
+# Part of Heimdall's vision-inference path — a derivative work of Ultralytics
+# YOLO — licensed under AGPL-3.0. See LICENSE-AGPL-3.0.txt and NOTICE.
+
+"""Jetson AGX Inference — Heimdall Fire Detection.
 
 Runs TensorRT YOLO inference with GStreamer camera pipelines on NVIDIA Jetson.
 Written for Jetson AGX with TensorRT, CUDA, OpenCV, and GStreamer.
@@ -245,7 +251,7 @@ def run_camera_loop(
             - conf: Confidence threshold (default 0.25)
             - record: Enable video recording (default False)
             - record_path: Output video path (default "output.avi")
-            - window_name: Display window title (default "XHeimdall - Fire Detection")
+            - window_name: Display window title (default "Heimdall - Fire Detection")
             - api_url: Convergence API URL for FireDetectionPayload POSTing (default None)
             - drone_lat: Drone latitude for geo projection (default 0.0)
             - drone_lon: Drone longitude for geo projection (default 0.0)
@@ -266,7 +272,7 @@ def run_camera_loop(
     conf = config.get("conf", 0.25)
     record_flag = config.get("record", False)
     record_path = config.get("record_path", "output.avi")
-    window_name = config.get("window_name", "XHeimdall - Fire Detection")
+    window_name = config.get("window_name", "Heimdall - Fire Detection")
 
     api_url = config.get("api_url")
     poster = None
@@ -405,7 +411,7 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser(
-        description="XHeimdall Jetson Fire Detection Inference"
+        description="Heimdall Jetson Fire Detection Inference"
     )
     parser.add_argument(
         "--engine", required=True, help="Path to TensorRT .engine file"

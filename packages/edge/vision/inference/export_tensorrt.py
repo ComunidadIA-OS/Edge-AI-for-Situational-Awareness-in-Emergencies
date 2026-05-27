@@ -1,4 +1,10 @@
-"""TensorRT FP16 Export — XHeimdall YOLO26m → Jetson AGX.
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright 2026 Saúl Briceño, Carlos Langa, and ComunidadIA-OS contributors
+#
+# Part of Heimdall's vision-inference path — a derivative work of Ultralytics
+# YOLO — licensed under AGPL-3.0. See LICENSE-AGPL-3.0.txt and NOTICE.
+
+"""TensorRT FP16 Export — Heimdall YOLO26m → Jetson AGX.
 
 Converts a trained YOLO .pt model to TensorRT FP16 engine.
 Requires CUDA-capable GPU with TensorRT installed.
@@ -117,7 +123,7 @@ def export_to_tensorrt(
         )
 
     logger.info("=" * 60)
-    logger.info("XHeimdall TensorRT FP16 Export")
+    logger.info("Heimdall TensorRT FP16 Export")
     logger.info("=" * 60)
     logger.info(f"  Model:       {model_path}")
     logger.info(f"  Output:      {output_path}")

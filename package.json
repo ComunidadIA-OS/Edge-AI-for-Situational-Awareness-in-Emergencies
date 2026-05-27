@@ -4,9 +4,9 @@
   "private": true,
   "description": "Edge AI for Situational Awareness in Emergencies — monorepo",
   "scripts": {
-    "dev:dashboard": "pnpm --filter @heimdall/dashboard dev",
-    "build:dashboard": "pnpm --filter @heimdall/dashboard build",
-    "lint:dashboard": "pnpm --filter @heimdall/dashboard lint",
+    "dev:ground-control": "pnpm --filter @heimdall/ground-control dev",
+    "build:ground-control": "pnpm --filter @heimdall/ground-control build",
+    "lint:ground-control": "pnpm --filter @heimdall/ground-control lint",
     "dev:edge": "pnpm --filter @heimdall/edge dev"
   },
   "engines": {

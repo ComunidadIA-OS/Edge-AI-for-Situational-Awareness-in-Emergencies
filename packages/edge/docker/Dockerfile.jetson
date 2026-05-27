@@ -1,4 +1,4 @@
-# XHeimdall Convergence API — Jetson AGX target
+# Heimdall Convergence API — Jetson AGX target
 #
 # Slim runtime image for the convergence (meteo + propagation) FastAPI server.
 # Inference (YOLO + TensorRT) runs in a separate process / container; this image

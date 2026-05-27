@@ -1,5 +1,5 @@
 {
-  "name": "@heimdall/dashboard",
+  "name": "@heimdall/ground-control",
   "version": "0.1.0",
   "private": true,
   "description": "Heimdall Ground Control — situational-awareness dashboard. Pure consumer of the MeteoReport contract.",

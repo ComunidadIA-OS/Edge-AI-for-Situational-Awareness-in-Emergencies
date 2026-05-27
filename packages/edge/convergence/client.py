@@ -63,7 +63,7 @@ def fetch_forecast(
     url = f"{_OPEN_METEO_FORECAST}?{urlencode(params)}"
     logger.info("Fetching Open-Meteo forecast: lat=%.4f lon=%.4f hours=%d", lat, lon, forecast_hours)
 
-    request = Request(url, headers={"User-Agent": "XHeimdall-Meteo/1.0"})
+    request = Request(url, headers={"User-Agent": "Heimdall-Meteo/1.0"})
     with urlopen(request, timeout=30) as response:
         data = json.loads(response.read().decode("utf-8"))
 

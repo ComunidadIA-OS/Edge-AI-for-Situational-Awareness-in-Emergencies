@@ -1,4 +1,4 @@
-# XHeimdall Dataset Preparation Config
+# Heimdall Dataset Preparation Config
 # Feeds into src.prepare_data.process_dataset()
 
 output_dir: "../../data/prepared"

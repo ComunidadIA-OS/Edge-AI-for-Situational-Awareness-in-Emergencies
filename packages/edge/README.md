@@ -308,7 +308,7 @@ This edge stack is built for a *Responsible and Open AI* challenge, and the cons
 - **Honest about limits.** Model metrics, the narrow training distribution, and false-positive/negative expectations are documented in the [model card](models/MODEL_CARD.md).
 - **Privacy.** Thermal imagery may incidentally capture people; downstream consumers must comply with applicable privacy law. Training data is not redistributed.
 
-See [SECURITY.md](SECURITY.md) for the full AI-safety scope.
+See [SECURITY.md](../../SECURITY.md) for the full AI-safety scope.
 
 ## License
 

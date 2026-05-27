@@ -1,1 +1,1 @@
-# XHeimdall test suite
+# Heimdall test suite

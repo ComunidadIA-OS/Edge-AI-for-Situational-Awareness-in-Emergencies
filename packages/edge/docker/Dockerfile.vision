@@ -1,4 +1,4 @@
-# XHeimdall Vision Inference — Jetson AGX target
+# Heimdall Vision Inference — Jetson AGX target
 #
 # Runs OUR fine-tuned YOLOv26m model (xheimdall-yolo26m-20260525-101951,
 # trained on 3 064 thermal frames via AWS SageMaker — see models/MODEL_CARD.md)

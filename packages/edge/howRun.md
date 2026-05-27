@@ -14,7 +14,7 @@ Two services, orchestrated via [docker/docker-compose.yml](./docker/docker-compo
 
 Built from [docker/Dockerfile.vision](./docker/Dockerfile.vision). Runs the YOLO26 model (TensorRT FP16) against a thermal camera feed and pushes `FireDetectionPayload` to the convergence API via `POST /detect`.
 
-- Requires CUDA / TensorRT on Jetson. Not covered in this guide — see [vision/README.md](./vision/README.md).
+- Requires CUDA / TensorRT on Jetson. Not covered in this guide — see [vision/](./vision/).
 
 ### 1b. `convergence-api` — weather + propagation
 

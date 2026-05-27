@@ -174,7 +174,7 @@ def run(args: argparse.Namespace) -> int:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="XHeimdall video detection runner")
+    p = argparse.ArgumentParser(description="Heimdall video detection runner")
     p.add_argument("--weights", default=DEFAULT_WEIGHTS,
                    help=f"Path to YOLO weights (.pt/.onnx/.engine). Default: {DEFAULT_WEIGHTS}")
     p.add_argument("--source", default="models/3-WhiteHot.mov",

@@ -34,12 +34,20 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-xs text-zinc-500 text-center max-w-[180px]">
               {this.state.error.message}
             </p>
-            <button
-              onClick={this.handleRetry}
-              className="text-xs text-zinc-400 hover:text-zinc-200 underline mt-1"
-            >
-              Retry
-            </button>
+            <div className="flex items-center gap-3 mt-1">
+              <button
+                onClick={this.handleRetry}
+                className="text-xs text-zinc-400 hover:text-zinc-200 underline"
+              >
+                Retry
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="text-xs text-zinc-400 hover:text-zinc-200 underline"
+              >
+                Reload page
+              </button>
+            </div>
           </div>
         )
       );

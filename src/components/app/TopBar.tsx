@@ -4,6 +4,7 @@ import { FlameKindling, Menu, X, Wifi, WifiOff, PanelRightOpen, AlertTriangle } 
 import { useConnectionStore } from "@/src/stores/connection-store";
 import { useUIStore } from "@/src/stores/ui-store";
 import { useMeteoReport } from "@/src/api/meteo-report";
+import { useDroneUrl } from "@/src/hooks/useDroneUrl";
 import { Badge } from "@/src/components/ui/Badge";
 import { InfoTooltip } from "@/src/components/ui/InfoTooltip";
 import { CinemaModeButton } from "./CinemaMode";
@@ -22,6 +23,7 @@ export function TopBar() {
   const { data: report } = useMeteoReport();
   const connectionState = useConnectionStore((s) => s.connectionState);
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { disconnect } = useDroneUrl();
 
   const fwi = report?.prediction?.fire_weather_index;
   const fwiCritical = fwi !== undefined && fwi >= 70;
@@ -94,6 +96,10 @@ export function TopBar() {
           </span>
         </div>
       )}
+
+      {/* Escape hatch — return to the connect screen to enter a different URL.
+          Always reachable while connecting or offline, so a bad URL never traps
+          the user on the dashboard. */}
 
       {/* Cinema mode */}
       <CinemaModeButton />

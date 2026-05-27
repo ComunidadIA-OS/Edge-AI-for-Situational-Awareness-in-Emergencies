@@ -16,10 +16,7 @@
 # which only exists from Node v22.13. Node 20 fails with ERR_UNKNOWN_BUILTIN_MODULE.
 FROM node:22-alpine AS deps
 WORKDIR /app
-# corepack picks the exact pnpm version pinned in package.json ("packageManager"),
-# so the build is reproducible. Do NOT use `pnpm@latest` here — it is
-# non-deterministic and a frequent "works on my machine, fails in CI" trap.
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 # Copy only the files needed to resolve the dependency graph so this layer
 # stays cached across source-only changes.
@@ -31,7 +28,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 # ----- Stage 2: builder -------------------------------------------------------
 FROM node:22-alpine AS builder
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

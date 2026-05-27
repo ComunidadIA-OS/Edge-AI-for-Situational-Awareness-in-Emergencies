@@ -37,7 +37,6 @@ export function useMeteoReport(): ReturnType<typeof useQuery<MeteoReport>> {
       const store = useConnectionStore.getState();
       const t0 = Date.now();
       const client = createJetsonClient(droneUrl);
-
       let raw: unknown;
       try {
         // Await the Response (ky throws HTTPError/TimeoutError here on failure),

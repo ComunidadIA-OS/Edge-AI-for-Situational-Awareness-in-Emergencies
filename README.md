@@ -96,10 +96,6 @@ cd Edge-AI-for-Situational-Awareness-in-Emergencies
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 | [HRIA.md](HRIA.md) | Human Rights Impact Assessment (privacy, non-discrimination, accountability) |
 
-## Roadmap
-
-> 🗺️ **Development Roadmap:** See our path from the current v0.1 prototype toward an operational pilot in the [Roadmap Document](./ROADMAP.md).
-
 ## 🤝 Responsible AI
 
 Heimdall is built for a *Responsible and Open AI* challenge, and the constraints are first-class:

@@ -1,0 +1,28 @@
+auto_label:
+  absolute_threshold: 100.0
+  gradient_threshold: 35.0
+  min_area: 40
+  max_aspect_ratio: 8.0
+  dbscan_eps: 35
+  dbscan_min_samples: 5
+  max_bbox_ratio: 0.4
+  kmeans_subdivide_threshold: 500
+  min_fill_ratio: 0.12
+  class_id: 0
+  debug_every_n: 10
+
+dataset:
+  name: Hanna_Hammock
+  plot1_thermal_dir: "datasets/archive/Hanna Hammock/plot 1/duringburn/geo_thermal_tiff_celsius/"
+  plot1_thermal_jpg_dir: "datasets/archive/Hanna Hammock/plot 1/duringburn/raw_thermal_jpg/"
+  plot1_rgb_dir: "datasets/archive/Hanna Hammock/plot 1/duringburn/raw_rgb_jpg/"
+  plot2_thermal_dir: "datasets/archive/Hanna Hammock/plot 2/duringburn/geo_thermal_tiff_celsius/"
+  plot2_thermal_jpg_dir: "datasets/archive/Hanna Hammock/plot 2/duringburn/raw_thermal_jpg/"
+  plot2_rgb_dir: "datasets/archive/Hanna Hammock/plot 2/duringburn/raw_rgb_jpg/"
+  preburn_dir: "datasets/archive/Hanna Hammock/plot 1/preburn/raw_rgb_jpg/"
+  postburn_dir: "datasets/archive/Hanna Hammock/plot 1/postburn/raw_rgb_jpg/"
+
+output:
+  labels_dir: "data/labels/all/"
+  images_dir: "data/images/all/"
+  debug_dir: "data/debug/"

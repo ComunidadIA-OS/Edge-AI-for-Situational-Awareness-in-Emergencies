@@ -1,0 +1,20 @@
+{
+  "name": "model-v1-aws",
+  "framework": "ultralytics",
+  "task": "detect",
+  "imgsz": 640,
+  "classes": {"0": "fire", "1": "smoke"},
+  "default_conf": 0.25,
+  "default_iou": 0.45,
+  "training": {
+    "source": "aws-s3://heimdall-datasets/fire-v1",
+    "metrics": {
+      "mAP50": 0.6936,
+      "mAP50_95": 0.4685,
+      "precision": 0.7169,
+      "recall": 0.6207
+    },
+    "epochs": 200,
+    "date": "2026-05-25T07:16:56Z"
+  }
+}

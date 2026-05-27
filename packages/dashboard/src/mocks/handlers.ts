@@ -1,30 +1,19 @@
 import { http, HttpResponse, delay } from "msw";
-import {
-  generateMockStatus,
-  generateMockTelemetry,
-  generateMockDetections,
-  generateMockMission,
-} from "./generators";
+import { generateMeteoReport } from "./generators";
 
-// Simulated Jetson endpoints — works for any base URL via wildcard matching
 export const handlers = [
-  http.get(/\/api\/status$/, async () => {
-    await delay(50 + Math.random() * 100);
-    return HttpResponse.json(generateMockStatus());
+  http.get(/\/latest$/, async () => {
+    await delay(40 + Math.random() * 80);
+    return HttpResponse.json(generateMeteoReport());
   }),
 
-  http.get(/\/api\/telemetry$/, async () => {
-    await delay(30 + Math.random() * 80);
-    return HttpResponse.json(generateMockTelemetry());
+  http.get(/\/history$/, async () => {
+    await delay(60);
+    return HttpResponse.json([]);
   }),
 
-  http.get(/\/api\/detections$/, async () => {
-    await delay(40 + Math.random() * 120);
-    return HttpResponse.json(generateMockDetections());
-  }),
-
-  http.get(/\/api\/mission$/, async () => {
-    await delay(20);
-    return HttpResponse.json(generateMockMission());
+  http.get(/\/health$/, async () => {
+    await delay(15);
+    return HttpResponse.json({ status: "ok", uptime_seconds: Date.now() / 1000 - 1_748_000_000 });
   }),
 ];

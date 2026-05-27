@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heimdall-edge"
+version = "0.1.0"
+description = "Heimdall edge — thermal fire detection (vision) + fire propagation forecasting (convergence)"
+requires-python = ">=3.10"
+authors = [
+  { name = "Saúl Briceño" },
+  { name = "Carlos Langa" },
+  { name = "ComunidadIA-OS contributors" },
+]
+
+dependencies = [
+  "numpy>=1.24.0,<2.0",
+  "pyyaml>=6.0",
+  "requests>=2.31.0",
+  "pydantic>=2.5.0",
+]
+
+[project.optional-dependencies]
+# Thermal IR TIFF decoding — needed for vision/io/thermal_io.py
+thermal = [
+  "tifffile>=2024.1.0",
+  "imagecodecs>=2024.1.0",
+]
+# Jetson inference runtime — torch, ultralytics, TensorRT, OpenCV
+jetson = [
+  "torch>=2.0.0",
+  "torchvision>=0.15.0",
+  "ultralytics>=8.2.0",
+  "onnx>=1.15.0",
+  "opencv-python>=4.8.0",
+]
+# Convergence API server
+api = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.27.0",
+]
+# Development and testing
+dev = [
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "httpx>=0.27.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vision*", "convergence*", "edge*"]
+exclude = ["tests*", "scripts*", "configs*", "docker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]

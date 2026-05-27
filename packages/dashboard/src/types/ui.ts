@@ -1,4 +1,4 @@
-export type SidebarTab = "status" | "detections" | "weather" | "layers";
+export type SidebarTab = "status" | "situacion" | "layers";
 
 export type ViewMode = "2d" | "3d";
 

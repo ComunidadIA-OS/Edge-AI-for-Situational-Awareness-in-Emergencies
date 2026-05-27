@@ -1,5 +1,3 @@
-export * from "./jetson";
-export * from "./firms";
-export * from "./weather";
+export * from "./meteo-report";
 export * from "./query-keys";
 export * from "./client";

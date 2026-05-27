@@ -2,14 +2,13 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useRef, type ReactNode } from "react";
-import { useSettingsStore } from "@/src/stores/settings-store";
 
 function MSWProvider({ children }: { children: ReactNode }) {
   const initialized = useRef(false);
-  const useMock = useSettingsStore((s) => s.useMockData);
 
   useEffect(() => {
-    if (!useMock || initialized.current) return;
+    if (process.env.NODE_ENV === "production") return;
+    if (initialized.current) return;
     initialized.current = true;
 
     import("@/src/mocks/browser").then(({ worker }) => {
@@ -18,7 +17,7 @@ function MSWProvider({ children }: { children: ReactNode }) {
         serviceWorker: { url: "/mockServiceWorker.js" },
       });
     });
-  }, [useMock]);
+  }, []);
 
   return <>{children}</>;
 }

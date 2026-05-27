@@ -3,27 +3,25 @@
 import { useState, useRef } from "react";
 import { Wifi, FlameKindling, AlertCircle, WifiOff } from "lucide-react";
 import { useDroneUrl } from "@/src/hooks/useDroneUrl";
-import { useSettingsStore } from "@/src/stores/settings-store";
 import { useConnectionStore } from "@/src/stores/connection-store";
 import { cn } from "@/src/lib/utils";
 
-const DEMO_URL = "http://192.168.1.100:8000";
+const DEFAULT_URL = "http://jetson.tail6eac47.ts.net:8001";
 
 export function ConnectScreen() {
   const { connect } = useDroneUrl();
-  const { setUseMockData, useMockData } = useSettingsStore();
   const connectionState = useConnectionStore((s) => s.connectionState);
-  const [url, setUrl] = useState(DEMO_URL);
+  const [url, setUrl] = useState(DEFAULT_URL);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function validateUrl(raw: string): string | null {
     try {
       const u = new URL(raw);
-      if (!["http:", "https:"].includes(u.protocol)) return "El protocolo debe ser http o https";
+      if (!["http:", "https:"].includes(u.protocol)) return "Protocol must be http or https";
       return null;
     } catch {
-      return "URL inválida — ej: http://192.168.1.100:8000";
+      return "Invalid URL — e.g. http://192.168.1.100:8000";
     }
   }
 
@@ -39,15 +37,10 @@ export function ConnectScreen() {
     connect(url.trim());
   }
 
-  function handleMockConnect() {
-    setUseMockData(true);
-    connect(DEMO_URL);
-  }
-
   const isConnecting = connectionState === "connecting";
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4 sm:px-6 py-6">
       {/* Header */}
       <div className="mb-10 text-center">
         <div className="flex items-center justify-center gap-3 mb-3">
@@ -55,21 +48,21 @@ export function ConnectScreen() {
           <h1 className="text-3xl font-bold text-white tracking-tight">Heimdall</h1>
         </div>
         <p className="text-zinc-400 text-sm max-w-xs">
-          Ground Control · Conciencia situacional de incendios en tiempo real
+          Ground Control · Real-time wildfire situational awareness
         </p>
       </div>
 
       {/* Connect card */}
-      <div className="w-full max-w-md bg-zinc-900 rounded-2xl border border-zinc-800 p-8 shadow-2xl">
+      <div className="w-full max-w-md bg-zinc-900 rounded-2xl border border-zinc-800 p-6 sm:p-8 shadow-2xl">
         <h2 className="text-base font-semibold text-zinc-100 mb-5 flex items-center gap-2">
           <Wifi className="w-4 h-4 text-sky-400" />
-          Conectar al Jetson AGX
+          Connect to Jetson AGX
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-1.5" htmlFor="drone-url">
-              URL del Jetson
+              Jetson URL
             </label>
             <input
               ref={inputRef}
@@ -82,7 +75,7 @@ export function ConnectScreen() {
               }}
               placeholder="http://192.168.1.100:8000"
               className={cn(
-                "w-full bg-zinc-800 border rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-500",
+                "w-full bg-zinc-800 border rounded-lg px-3 py-2.5 text-base text-white placeholder-zinc-500",
                 "focus:outline-none focus:ring-2 focus:ring-sky-500 transition",
                 error ? "border-red-500" : "border-zinc-700"
               )}
@@ -107,42 +100,19 @@ export function ConnectScreen() {
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
-            {isConnecting ? "Conectando…" : "Conectar"}
+            {isConnecting ? "Connecting…" : "Connect"}
           </button>
         </form>
 
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-800" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-zinc-900 px-3 text-xs text-zinc-500">o</span>
-          </div>
-        </div>
-
-        {/* Mock data mode */}
-        <button
-          onClick={handleMockConnect}
-          className={cn(
-            "w-full py-2.5 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2",
-            useMockData
-              ? "bg-orange-600/20 border border-orange-600/50 text-orange-300 hover:bg-orange-600/30"
-              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700"
-          )}
-        >
-          <FlameKindling className="w-4 h-4" />
-          Demo con datos simulados
-        </button>
-
         <p className="mt-4 text-xs text-zinc-500 text-center">
-          Los datos simulados generan detecciones, telemetría y estado realistas sin necesidad de hardware.
+          The dashboard is agnostic to the source of <code className="text-zinc-400">/latest</code> — any service emitting a valid <code className="text-zinc-400">MeteoReport v1</code> payload works.
         </p>
       </div>
 
       {/* Footer */}
-      <p className="mt-8 text-xs text-zinc-600 flex items-center gap-1.5">
+      <p className="mt-8 text-xs text-zinc-600 flex flex-wrap items-center justify-center text-center gap-1.5">
         <WifiOff className="w-3 h-3" />
-        Hackathon SEDIA · Reto IA Responsable · Mayo 2026 · MIT License
+        Hackathon SEDIA · Responsible AI Challenge · May 2026 · MIT License
       </p>
     </div>
   );

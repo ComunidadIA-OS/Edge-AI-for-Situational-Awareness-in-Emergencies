@@ -7,8 +7,7 @@
     "dev:dashboard": "pnpm --filter @heimdall/dashboard dev",
     "build:dashboard": "pnpm --filter @heimdall/dashboard build",
     "lint:dashboard": "pnpm --filter @heimdall/dashboard lint",
-    "dev:edge": "pnpm --filter @heimdall/edge dev",
-    "dev:simulator": "pnpm --filter @heimdall/simulator dev"
+    "dev:edge": "pnpm --filter @heimdall/edge dev"
   },
   "engines": {
     "node": ">=18",

@@ -1,0 +1,73 @@
+name: Sync governance from main
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/v0.1-GroundControl'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v0.1-GroundControl
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch origin v0.1-Heimdall
+
+      - name: Detect governance drift
+        id: drift
+        run: |
+          FILES="CODE_OF_CONDUCT.md CONTRIBUTING.md LICENSE"
+          CHANGED=""
+          for f in $FILES; do
+            if git diff --quiet origin/v0.1-Heimdall -- "$f" 2>/dev/null; then
+              continue
+            fi
+            CHANGED="$CHANGED $f"
+          done
+          if [ -n "$CHANGED" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "files=$CHANGED" >> "$GITHUB_OUTPUT"
+            echo "Detected drift in:$CHANGED"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No governance drift detected"
+          fi
+
+      - name: Create sync PR
+        if: steps.drift.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="sync/governance-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+
+          for f in ${{ steps.drift.outputs.files }}; do
+            git checkout origin/v0.1-Heimdall -- "$f"
+          done
+
+          git add ${{ steps.drift.outputs.files }}
+          git commit -m "chore: sync governance files from v0.1-Heimdall"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --base v0.1-GroundControl \
+            --head "$BRANCH" \
+            --title "chore: sync governance files from v0.1-Heimdall" \
+            --body "Automated governance sync from the \`v0.1-Heimdall\` main branch.
+
+          **Synced files:** ${{ steps.drift.outputs.files }}
+
+          Review the diff and merge if the changes look correct."

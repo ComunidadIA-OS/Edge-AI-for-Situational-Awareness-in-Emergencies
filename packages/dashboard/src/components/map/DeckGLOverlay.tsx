@@ -3,44 +3,58 @@
 import { useEffect, useRef } from "react";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type maplibregl from "maplibre-gl";
-import { useDetectionLayers } from "./layers/DetectionPolygonLayer";
-import { useDroneTrailLayer } from "./layers/DroneTrailLayer";
-import { useMissionAreaLayer } from "./layers/MissionAreaLayer";
-import { useFIRMSLayer } from "./layers/FIRMSHotspotLayer";
+import { useRiskBuffersLayer } from "./layers/RiskBuffersLayer";
+import { usePredictedPerimeterLayer } from "./layers/PredictedPerimeterLayer";
+import { useCurrentPerimeterLayer } from "./layers/CurrentPerimeterLayer";
+import { useWindVectorLayer } from "./layers/WindVectorLayer";
+import { useSpreadVectorLayer } from "./layers/SpreadVectorLayer";
+import { useHotspotsLayer } from "./layers/HotspotsLayer";
+import { useInfrastructureLayer } from "./layers/InfrastructureLayer";
+import { useDroneLayer } from "./layers/DroneLayer";
 
-type Props = {
-  map: maplibregl.Map;
-};
+type Props = { map: maplibregl.Map };
 
 export function DeckGLOverlay({ map }: Props) {
   const overlayRef = useRef<InstanceType<typeof MapboxOverlay> | null>(null);
 
-  const detectionLayers = useDetectionLayers();
-  const droneLayer = useDroneTrailLayer();
-  const missionLayer = useMissionAreaLayer();
-  const firmsLayer = useFIRMSLayer();
+  const riskBuffers = useRiskBuffersLayer();
+  const predictedPerimeters = usePredictedPerimeterLayer();
+  const currentPerimeter = useCurrentPerimeterLayer();
+  const windVector = useWindVectorLayer();
+  const spreadVector = useSpreadVectorLayer();
+  const hotspots = useHotspotsLayer();
+  const infrastructure = useInfrastructureLayer();
+  const drone = useDroneLayer();
 
-  // Mount overlay once when map is ready
   useEffect(() => {
+    // interleaved: false keeps deck.gl as a separate canvas above the basemap.
+    // interleaved: true would allow terrain draping but MapLibre re-inits its
+    // WebGL context when setTerrain() is called, which drops all custom layers
+    // registered by deck.gl — the layers disappear until the next full reload.
+    // For now interleaved: false is the only stable option with terrain enabled.
     const overlay = new MapboxOverlay({ interleaved: false, layers: [] });
-    // MapboxOverlay implements IControl and works with maplibre-gl via the mapbox-gl alias
     (map as unknown as { addControl: (ctrl: unknown) => void }).addControl(overlay);
     overlayRef.current = overlay;
-
     return () => {
       (map as unknown as { removeControl: (ctrl: unknown) => void }).removeControl(overlay);
       overlayRef.current = null;
     };
   }, [map]);
 
-  // Push updated layers on each render
   useEffect(() => {
-    const overlay = overlayRef.current;
-    if (!overlay) return;
-    overlay.setProps({
-      layers: [...detectionLayers, ...droneLayer, ...missionLayer, ...firmsLayer],
+    overlayRef.current?.setProps({
+      layers: [
+        ...riskBuffers,
+        ...predictedPerimeters,
+        ...currentPerimeter,
+        ...windVector,
+        ...spreadVector,
+        ...hotspots,
+        ...infrastructure,
+        ...drone,
+      ],
     });
-  }, [detectionLayers, droneLayer, missionLayer, firmsLayer]);
+  }, [riskBuffers, predictedPerimeters, currentPerimeter, windVector, spreadVector, hotspots, infrastructure, drone]);
 
   return null;
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { Wifi, Flame, Cloud, Layers, ChevronRight } from "lucide-react";
-import { useUIStore } from "@/src/stores/ui-store";
+import { useState } from "react";
+import { Wifi, TrendingUp, Layers, ChevronRight } from "lucide-react";
+import { useUIStore, SIDEBAR_DEFAULT_W } from "@/src/stores/ui-store";
 import { ConnectionPanel } from "./ConnectionPanel";
-import { DetectionsPanel } from "./DetectionsPanel";
-import { WeatherPanel } from "./WeatherPanel";
+import { SituationalPanel } from "./SituationalPanel";
 import { LayersPanel } from "./LayersPanel";
+import { ErrorBoundary } from "@/src/components/ui/ErrorBoundary";
 import { cn } from "@/src/lib/utils";
 import type { SidebarTab } from "@/src/types";
 
@@ -16,26 +17,76 @@ type TabConfig = {
 };
 
 const TABS: TabConfig[] = [
-  { id: "status", label: "Estado", icon: <Wifi className="w-4 h-4" /> },
-  { id: "detections", label: "Fuegos", icon: <Flame className="w-4 h-4" /> },
-  { id: "weather", label: "Meteo", icon: <Cloud className="w-4 h-4" /> },
-  { id: "layers", label: "Capas", icon: <Layers className="w-4 h-4" /> },
+  { id: "status", label: "Status", icon: <Wifi className="w-4 h-4" /> },
+  { id: "situacion", label: "Situation", icon: <TrendingUp className="w-4 h-4" /> },
+  { id: "layers", label: "Layers", icon: <Layers className="w-4 h-4" /> },
 ];
 
 export function Sidebar() {
-  const { sidebarOpen, activeTab, setActiveTab, toggleSidebar } = useUIStore();
+  const {
+    sidebarOpen, sidebarWidth, setSidebarWidth,
+    activeTab, setActiveTab, toggleSidebar,
+  } = useUIStore();
+  const [resizing, setResizing] = useState(false);
+
+  const startResize = (e: React.PointerEvent) => {
+    e.preventDefault();
+    setResizing(true);
+    const startX = e.clientX;
+    const startW = useUIStore.getState().sidebarWidth;
+    const onMove = (ev: PointerEvent) =>
+      setSidebarWidth(startW + (startX - ev.clientX));
+    const onUp = () => {
+      setResizing(false);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
 
   return (
     <>
-      {/* Sidebar panel */}
+      {/* Backdrop overlay — mobile only */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-15 bg-black/50 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+
       <aside
         className={cn(
-          "fixed top-14 right-0 bottom-0 z-20",
-          "bg-zinc-900/95 backdrop-blur-sm border-l border-zinc-800",
-          "flex flex-col transition-all duration-300",
-          sidebarOpen ? "w-72" : "w-0 overflow-hidden"
+          // Base (mobile): bottom sheet
+          "fixed inset-x-0 bottom-0 z-20 max-h-[60vh] rounded-t-2xl",
+          "bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-800",
+          "flex flex-col",
+          sidebarOpen ? "translate-y-0" : "translate-y-full",
+          // Tablet+: right sidebar with dynamic width
+          "md:top-14 md:bottom-0 md:inset-x-auto md:right-0",
+          "md:max-h-none md:rounded-none md:border-t-0 md:border-l md:border-zinc-800",
+          "md:translate-y-0",
+          !resizing && "transition-all duration-300",
+          sidebarOpen ? "md:overflow-visible" : "md:w-0 md:overflow-hidden"
         )}
+        style={sidebarOpen ? { width: `${sidebarWidth}px` } : undefined}
       >
+        {/* Drag handle — mobile visual indicator */}
+        <div className="w-10 h-1 bg-zinc-600 rounded-full mx-auto my-2 md:hidden" />
+
+        {/* Resize grip — desktop, on the left edge of the sidebar */}
+        <div
+          className={cn(
+            "absolute top-0 left-0 bottom-0 w-1.5 z-10 hidden md:block",
+            "cursor-ew-resize touch-none",
+            "hover:bg-sky-500/40 transition-colors",
+            resizing && "bg-sky-500/40"
+          )}
+          onPointerDown={startResize}
+          onDoubleClick={() => setSidebarWidth(SIDEBAR_DEFAULT_W)}
+          title="Drag to resize · double-click to reset"
+        />
+
         {/* Tab bar */}
         <div className="flex border-b border-zinc-800 shrink-0">
           {TABS.map((tab) => (
@@ -57,23 +108,26 @@ export function Sidebar() {
 
         {/* Panel content */}
         <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-zinc-700">
-          {activeTab === "status" && <ConnectionPanel />}
-          {activeTab === "detections" && <DetectionsPanel />}
-          {activeTab === "weather" && <WeatherPanel />}
-          {activeTab === "layers" && <LayersPanel />}
+          <ErrorBoundary>
+            {activeTab === "status" && <ConnectionPanel />}
+            {activeTab === "situacion" && <SituationalPanel />}
+            {activeTab === "layers" && <LayersPanel />}
+          </ErrorBoundary>
         </div>
       </aside>
 
-      {/* Toggle button */}
+      {/* Toggle button — hidden on mobile, visible on tablet+ */}
       <button
         onClick={toggleSidebar}
         className={cn(
+          "hidden md:flex",
           "fixed top-1/2 -translate-y-1/2 z-30",
           "bg-zinc-800 hover:bg-zinc-700 border border-zinc-700",
-          "rounded-l-lg p-1.5 transition",
-          sidebarOpen ? "right-72" : "right-0"
+          "rounded-l-lg p-1.5",
+          !resizing && "transition-all duration-300"
         )}
-        aria-label={sidebarOpen ? "Cerrar sidebar" : "Abrir sidebar"}
+        style={{ right: sidebarOpen ? `${sidebarWidth}px` : 0 }}
+        aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
         <ChevronRight
           className={cn(

@@ -1,0 +1,77 @@
+name: False Positive Report
+description: Report a false positive fire detection from the thermal vision system
+title: "[FALSE+] "
+labels: [bug, vision, false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **False positives are critical for a fire detection system.** Please provide as much detail as possible so we can improve the detection model.
+
+        A false positive means Heimdall reported a fire where there was none — this is a safety and trust issue.
+  - type: textarea
+    id: incident
+    attributes:
+      label: Incident description
+      description: Describe what happened. When and where was the false detection?
+    validations:
+      required: true
+  - type: input
+    id: datetime
+    attributes:
+      label: Date and time (UTC)
+      description: When did the false positive occur?
+      placeholder: "2026-05-27 14:30 UTC"
+  - type: input
+    id: location
+    attributes:
+      label: GPS coordinates
+      description: Latitude, longitude of the drone at time of detection
+      placeholder: "41.6488, -0.8891"
+  - type: input
+    id: altitude
+    attributes:
+      label: Drone altitude (m AGL)
+      placeholder: "120"
+  - type: input
+    id: heading
+    attributes:
+      label: Drone heading (degrees)
+      placeholder: "250"
+  - type: textarea
+    id: thermal_context
+    attributes:
+      label: Thermal context
+      description: |
+        What was in the thermal frame? (e.g., sun glare on water, hot engine exhaust, metal roof, asphalt, campfire, flare, etc.)
+      placeholder: "Sun reflection on a metal roof at ~200 °C apparent temperature."
+  - type: input
+    id: model_version
+    attributes:
+      label: Model version
+      description: Which YOLO26 checkpoint / TensorRT engine was running?
+      placeholder: "yolo26m-20260525-101951 / best.engine (FP16)"
+  - type: input
+    id: confidence
+    attributes:
+      label: Detection confidence
+      description: Confidence score reported by the model for this detection.
+      placeholder: "0.72"
+  - type: input
+    id: bbox
+    attributes:
+      label: Bounding box
+      description: Approximate bounding box coordinates or region in frame.
+      placeholder: "top-left quadrant, ~30% of frame"
+  - type: textarea
+    id: frame
+    attributes:
+      label: Thermal frame
+      description: |
+        If possible, attach the thermal frame (or a link to it) that triggered the false positive.
+        **Do not upload to public issues if the frame contains identifiable people or private property.** Use a secure channel instead.
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested mitigation
+      description: Any ideas on what could have prevented this false positive?

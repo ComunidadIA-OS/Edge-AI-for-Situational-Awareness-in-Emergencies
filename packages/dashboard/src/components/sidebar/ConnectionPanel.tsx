@@ -1,49 +1,69 @@
 "use client";
 
+import { useState } from "react";
 import {
-  Wifi,
-  WifiOff,
-  Loader2,
-  Cpu,
-  Thermometer,
-  Activity,
-  Signal,
+  Wifi, WifiOff, Loader2, Activity, Clock, Code2,
+  Thermometer, Droplets, Wind, Unplug,
 } from "lucide-react";
-import { useJetsonStatus } from "@/src/api/jetson";
 import { useConnectionStore } from "@/src/stores/connection-store";
+import { useSettingsStore } from "@/src/stores/settings-store";
+import { useMeteoReport } from "@/src/api/meteo-report";
 import { useDroneUrl } from "@/src/hooks/useDroneUrl";
 import { Badge } from "@/src/components/ui/Badge";
+import { JsonModal } from "@/src/components/ui/JsonModal";
 import { cn } from "@/src/lib/utils";
 import type { ConnectionState } from "@/src/types";
 
-function connectionVariant(state: ConnectionState) {
-  if (state === "online") return "success";
-  if (state === "stale") return "warning";
-  if (state === "offline") return "error";
-  if (state === "connecting") return "info";
-  return "default";
+/** Approximate payload size of a JSON value, formatted as B / KB. */
+function formatBytes(value: unknown): string {
+  const bytes = new Blob([JSON.stringify(value)]).size;
+  return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
 }
 
-function connectionLabel(state: ConnectionState) {
-  const labels: Record<ConnectionState, string> = {
-    online: "En línea",
-    stale: "Datos antiguos",
-    offline: "Sin conexión",
-    connecting: "Conectando",
-    unconfigured: "Sin configurar",
-  };
-  return labels[state];
+function connectionVariant(state: ConnectionState) {
+  if (state === "online") return "success" as const;
+  if (state === "stale") return "warning" as const;
+  if (state === "offline") return "error" as const;
+  if (state === "connecting") return "info" as const;
+  return "default" as const;
+}
+
+const CONNECTION_LABEL: Record<ConnectionState, string> = {
+  online: "Online",
+  stale: "Stale data",
+  offline: "Offline",
+  connecting: "Connecting…",
+  unconfigured: "Not configured",
+};
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between py-1.5 border-b border-zinc-800 last:border-0">
+      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="text-xs text-zinc-300 font-mono text-right truncate max-w-[140px]">{value}</span>
+    </div>
+  );
 }
 
 export function ConnectionPanel() {
-  const { data: status } = useJetsonStatus();
+  const { data: report } = useMeteoReport();
   const connectionState = useConnectionStore((s) => s.connectionState);
+  const lastSeenAt = useConnectionStore((s) => s.lastSeenAt);
   const latencyMs = useConnectionStore((s) => s.latencyMs);
+  const lastError = useConnectionStore((s) => s.lastError);
+  const pollingIntervalMs = useSettingsStore((s) => s.pollingIntervalMs);
   const { droneUrl, disconnect } = useDroneUrl();
+  const [jsonOpen, setJsonOpen] = useState(false);
+
+  const lastSeenLabel = lastSeenAt
+    ? new Date(lastSeenAt).toLocaleTimeString()
+    : "—";
+
+  const weather = report?.current_weather;
 
   return (
     <div className="space-y-4">
-      {/* Status header */}
+      {/* Status row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {connectionState === "connecting" ? (
@@ -54,102 +74,114 @@ export function ConnectionPanel() {
             <WifiOff className="w-4 h-4 text-zinc-500" />
           )}
           <Badge variant={connectionVariant(connectionState)}>
-            {connectionLabel(connectionState)}
+            {CONNECTION_LABEL[connectionState]}
           </Badge>
         </div>
         <button
           onClick={disconnect}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition"
+          className={cn(
+            "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition active:scale-95",
+            "border-rose-700/50 bg-rose-900/30 text-rose-300",
+            "hover:border-rose-600 hover:bg-rose-800/50 hover:text-rose-100",
+            "focus:outline-none focus:ring-2 focus:ring-rose-500/60"
+          )}
         >
-          Desconectar
+          <Unplug className="w-3.5 h-3.5" />
+          Disconnect
         </button>
       </div>
 
-      {/* URL */}
-      <div>
-        <p className="text-xs text-zinc-500 mb-0.5">URL Jetson</p>
-        <p className="text-xs text-zinc-300 font-mono truncate">{droneUrl || "—"}</p>
-      </div>
-
-      {/* Connectivity metrics */}
-      {status && (
-        <div className="grid grid-cols-2 gap-2">
-          <Metric
-            icon={<Signal className="w-3 h-3" />}
-            label="Enlace"
-            value={status.connectivity.link_type.toUpperCase()}
-          />
-          <Metric
-            icon={<Activity className="w-3 h-3" />}
-            label="Latencia"
-            value={latencyMs ? `${latencyMs.toFixed(0)} ms` : "—"}
-          />
-          <Metric
-            icon={<Cpu className="w-3 h-3" />}
-            label="CPU"
-            value={`${status.system.cpu_temp_c.toFixed(0)}°C`}
-            warn={status.system.cpu_temp_c > 75}
-          />
-          <Metric
-            icon={<Thermometer className="w-3 h-3" />}
-            label="GPU"
-            value={`${status.system.gpu_temp_c.toFixed(0)}°C`}
-            warn={status.system.gpu_temp_c > 80}
-          />
+      {/* Last error surface */}
+      {lastError && (connectionState === "offline" || connectionState === "stale") && (
+        <div className="rounded-lg bg-red-950/30 border border-red-800/40 px-3 py-2">
+          <p className="text-xs text-red-300/80 truncate" title={lastError}>
+            {lastError.length > 80 ? `${lastError.slice(0, 80)}…` : lastError}
+          </p>
         </div>
       )}
 
-      {/* Model status */}
-      {status && (
-        <div className="rounded-lg bg-zinc-800/60 px-3 py-2.5 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-400">Modelo IA</p>
-            <Badge
-              variant={
-                status.model.status === "running"
-                  ? "success"
-                  : status.model.status === "error"
-                  ? "error"
-                  : "warning"
+      {/* Connection details */}
+      <div className="rounded-lg bg-zinc-800/40 px-3 divide-y divide-zinc-800">
+        <Row label="Jetson URL" value={droneUrl || "—"} />
+        <Row label="Latency" value={latencyMs ? `${latencyMs.toFixed(0)} ms` : "—"} />
+        <Row label="Polling every" value={`${(pollingIntervalMs / 1000).toFixed(1)} s`} />
+        <Row
+          label="Last response"
+          value={
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {lastSeenLabel}
+            </span>
+          }
+        />
+      </div>
+
+      {/* MeteoReport metadata */}
+      {report && (
+        <div>
+          <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Activity className="w-3 h-3" /> Latest report
+          </p>
+          <div className="rounded-lg bg-zinc-800/40 px-3 divide-y divide-zinc-800">
+            <Row label="Generated" value={new Date(report.metadata.generated_at).toLocaleTimeString()} />
+            <Row label="Model" value={`v${report.metadata.model_version}`} />
+            <Row label="Horizon" value={`${report.metadata.forecast_hours}h`} />
+            <Row label="Forecast steps" value={`${report.prediction?.hourly?.length ?? 0}`} />
+            <Row label="Hotspots" value={`${report.fire_perimeter?.hotspots?.length ?? 0}`} />
+            <Row label="Payload" value={formatBytes(report)} />
+            <Row
+              label="Sources"
+              value={
+                <span className="text-zinc-400 text-[10px]">
+                  {report.metadata.data_sources.join(", ")}
+                </span>
               }
-            >
-              {status.model.status}
-            </Badge>
-          </div>
-          <p className="text-xs font-mono text-zinc-300">{status.model.model_name}</p>
-          <div className="flex items-center gap-3 text-xs text-zinc-400">
-            <span>{status.model.fps.toFixed(1)} FPS</span>
-            <span>{status.model.last_inference_ms.toFixed(0)} ms</span>
-            {status.model.tensorrt_optimized && (
-              <Badge variant="info">TensorRT</Badge>
-            )}
+            />
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function Metric({
-  icon,
-  label,
-  value,
-  warn = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  warn?: boolean;
-}) {
-  return (
-    <div className="rounded-lg bg-zinc-800/60 px-2.5 py-2">
-      <div className="flex items-center gap-1 text-zinc-400 mb-1">
-        {icon}
-        <span className="text-xs">{label}</span>
-      </div>
-      <p className={cn("text-sm font-semibold", warn ? "text-amber-400" : "text-zinc-100")}>
-        {value}
-      </p>
+      {/* Live weather snapshot from the payload */}
+      {weather && (
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg bg-zinc-800/40 p-2 flex flex-col items-center gap-0.5">
+            <Thermometer className="w-3.5 h-3.5 text-orange-400" />
+            <span className="text-sm font-semibold text-zinc-200">{Math.round(weather.temperature_c)}°</span>
+            <span className="text-[9px] text-zinc-500 uppercase">Temp</span>
+          </div>
+          <div className="rounded-lg bg-zinc-800/40 p-2 flex flex-col items-center gap-0.5">
+            <Droplets className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-sm font-semibold text-zinc-200">{Math.round(weather.relative_humidity_pct)}%</span>
+            <span className="text-[9px] text-zinc-500 uppercase">Humidity</span>
+          </div>
+          <div className="rounded-lg bg-zinc-800/40 p-2 flex flex-col items-center gap-0.5">
+            <Wind className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-sm font-semibold text-zinc-200">{Math.round(weather.wind_speed_kmh)}</span>
+            <span className="text-[9px] text-zinc-500 uppercase">km/h</span>
+          </div>
+        </div>
+      )}
+
+      {/* Raw payload inspector */}
+      {report && (
+        <button
+          type="button"
+          onClick={() => setJsonOpen(true)}
+          className="w-full flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/40 px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-zinc-700/60 hover:text-zinc-100 transition"
+        >
+          <Code2 className="w-3.5 h-3.5" />
+          View live JSON
+        </button>
+      )}
+
+      {jsonOpen && (
+        <JsonModal
+          title="MeteoReport — raw payload"
+          data={report}
+          live={connectionState === "online"}
+          onClose={() => setJsonOpen(false)}
+        />
+      )}
     </div>
   );
 }

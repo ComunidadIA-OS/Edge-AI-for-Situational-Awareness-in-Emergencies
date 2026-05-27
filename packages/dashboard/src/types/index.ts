@@ -1,6 +1,4 @@
 export * from "./geo";
-export * from "./jetson";
-export * from "./firms";
-export * from "./weather";
+export * from "./meteo-report";
 export * from "./map";
 export * from "./ui";

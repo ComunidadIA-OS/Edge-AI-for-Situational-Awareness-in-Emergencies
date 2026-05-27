@@ -1,0 +1,93 @@
+# Credentials and secrets (NEVER commit — rotate immediately if exposed)
+secrets/
+.secrets/
+*.csv
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+
+# Datasets and data (do not commit — use S3)
+datasets/
+/data/
+
+# Allow test fixtures inside tests/
+!tests/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# YOLO training artifacts and model weights (download from S3 on Jetson)
+runs/
+weights/
+*.pt
+*.engine
+*.onnx
+wandb/
+
+# docker/.env (never commit — use .env.example)
+docker/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# S3 sync / AWS artifacts
+s3/
+
+# Logs and build artifacts
+*.log
+*.log.json
+log*.json
+logs*.json
+checkpoint_log.json
+final_log.json
+err.txt
+training_log.txt
+
+# Claude / AI assistants
+.claude/
+
+# Testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Docker artifacts (except Dockerfiles)
+*.tar
+*.tar.gz
+
+# Test videos and capture outputs (too large for git; not used at runtime)
+*.mp4
+*.MP4
+*.mov
+*.MOV
+models/#*
+output.mp4
+
+# SageMaker training output (raw artefacts live in S3, not in git)
+models/xheimdall-yolo26m-*/
+models/xheimdall-yolo26m-*.tar.gz
+
+# Local planning / assistant artefacts
+.claude/
+plans/

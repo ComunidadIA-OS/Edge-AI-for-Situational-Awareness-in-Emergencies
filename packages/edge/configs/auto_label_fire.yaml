@@ -1,0 +1,25 @@
+auto_label:
+  absolute_threshold: 150.0
+  gradient_threshold: 40.0
+  min_area: 50
+  max_aspect_ratio: 8.0
+  dbscan_eps: 30
+  dbscan_min_samples: 5
+  max_bbox_ratio: 0.4
+  kmeans_subdivide_threshold: 500
+  min_fill_ratio: 0.15
+  class_id: 0
+  debug_every_n: 10
+
+dataset:
+  name: FLAME_Fire
+  thermal_dir: "datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/Fire/Thermal/Celsius TIFF/"
+  thermal_jpg_dir: "datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/Fire/Thermal/Raw JPG/"
+  rgb_dir: "datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/Fire/RGB/Corrected FOV/"
+  negative_thermal_dir: "datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/No Fire/Thermal/Celsius TIFF/"
+  negative_thermal_jpg_dir: "datasets/CVSubset/FLAME 3 CV Dataset (Sycan Marsh)/No Fire/Thermal/Raw JPG/"
+
+output:
+  labels_dir: "data/labels/all/"
+  images_dir: "data/images/all/"
+  debug_dir: "data/debug/"

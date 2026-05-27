@@ -1,0 +1,11 @@
+# Local-test image: serve the HOST-prebuilt static export (out/) via nginx.
+# Avoids the in-container `next build`, which needs network access to Google
+# Fonts that the Podman build VM cannot reach. Build context must be ./out so
+# the repo-root .dockerignore (which excludes out/) does not apply.
+#
+#   podman build -f Dockerfile.serve -t heimdall-serve ./out
+#   podman run -d --name heimdall-test -p 3000:80 heimdall-serve
+FROM nginx:1.27-alpine
+COPY . /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
